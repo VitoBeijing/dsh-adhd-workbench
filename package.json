@@ -1,0 +1,29 @@
+{
+  "name": "dsh-adhd-workbench",
+  "version": "0.1.0",
+  "description": "DSH 插件：ADHD 友好的个人任务工作台——每日三大任务、灵感库、DSH/Codex 工作区看板、表达教练、汇报导出与执行习惯自学习",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./client/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": ["lib", "client", "cordis.patch.yml", "README.md"],
+  "engines": { "node": ">=22.15" },
+  "repository": { "type": "git", "url": "git+https://github.com/VitoBeijing/dsh-adhd-workbench.git" },
+  "homepage": "https://github.com/VitoBeijing/dsh-adhd-workbench#readme",
+  "bugs": { "url": "https://github.com/VitoBeijing/dsh-adhd-workbench/issues" },
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": ["dsh-plugin", "dsh", "adhd", "todo"],
+  "license": "MIT",
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "inject": ["@deepseek-ai/dsh-client-runtime"]
+    }
+  }
+}
