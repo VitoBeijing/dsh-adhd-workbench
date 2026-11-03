@@ -7,6 +7,7 @@ DeepSeek Harness（DSH）插件：一个 ADHD 友好的个人任务工作台。�
 | 页面 | 做什么 |
 | --- | --- |
 | 🎯 今日 | 大标题 +「现在只做这一步」主卡片；三件必做、顺手做的小任务用分组列表，点开才显示步骤和操作；右侧窄栏是合并后的时间线（同一任务的连续专注块合成一行）。所有输入都在底部悬浮栏：说一句话加任务（缺的重要性 / 紧急度 / 截止日期逐项追问，确认后入库）、给任务加一步、记汇报要点。 |
+| 📅 日历 | 周视图（默认）和月视图。任务按「计划日期」放在那一天，没有计划日期就放在截止那天；截止日另外标红。拖动任务改计划日期，拖到「未安排」取消；点某天的 ＋ 在底部输入栏说一句话，任务就安排在那天；点任务打开详情卡片完成、改标题、改日期和重要/紧急、删除。过去的日子显示完成了什么、专注了多久。计划在今天和拖欠的任务优先进今日必做，安排在以后的今天不排。 |
 | 💡 灵感库 | 一次写好几件事也行：AI 按主题拆成多条，每条整理成一句话并单独分到个人 / 工作 / 生活和按内容命名的小类。先出预览，可以改文字、改分类、删掉或合并，确认后才入库；原话折叠保存，随时可查。旧的大段灵感可以点「✂️ AI 重新拆分」。每条都能一键转任务。 |
 | 🗂 工作区 | 按 Agent 从上到下纵向展示工作区，支持 DeepSeek Harness、Codex、Claude Code、OpenCode、WorkBuddy。每个工作区只列最近 2 个会话，用圆环显示上下文用了多少（中间是百分比）。 |
 | ⚙️ 设置 | 配置要展示的 Agent：启用/停用、改名称、改数据目录、调顺序、设置工作区数和上下文窗口；同一种 Agent 可以加多个。首次使用会自动检测本机已安装的 Agent。 |
@@ -39,6 +40,7 @@ git clone https://github.com/VitoBeijing/dsh-adhd-workbench.git
 宿主通过 DSH 的 `webServer` 注册 `/adhd-workbench/api/*`。写操作要求 `content-type: application/json`，并且 `Origin` 必须和 `Host` 一致。主要接口：
 
 - `GET /plan`：今日计划（必做、小任务、时间块、当前一步、统计）
+- `GET /calendar?from=YYYY-MM-DD&to=YYYY-MM-DD`：日历数据（最多 62 天），每天的计划任务、截止项、完成项、专注分钟数，以及未安排的任务；任务的 `planDate` 用 `POST /tasks`、`PATCH /tasks/:id` 读写
 - `POST /tasks`，`PATCH /tasks/:id`，`POST /tasks/:id/split`，`POST /tasks/:id/focus`，`POST /tasks/:id/notes`
 - `POST /intake/parse`，`POST /intake/answer`：对话式录入
 - `GET|PUT /sources`，`POST /sources/reset`：Agent 来源设置

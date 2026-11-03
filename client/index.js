@@ -18,6 +18,11 @@ window.__ModuleLoader__.load({
     const fmtClock = (ms) => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` }
     const ago = (t) => { if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 1 ? '刚刚' : m < 60 ? `${m} 分钟前` : m < 1440 ? `${Math.round(m / 60)} 小时前` : `${Math.round(m / 1440)} 天前` }
     const cx = (...xs) => xs.filter(Boolean).join(' ')
+    const dkey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+    const kdate = (k) => new Date(`${k}T12:00:00`)
+    const addK = (k, n) => { const d = kdate(k); d.setDate(d.getDate() + n); return dkey(d) }
+    const weekOf = (k) => { const d = kdate(k); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return dkey(d) }
+    const mdLabel = (k) => { const d = kdate(k); return `${d.getMonth() + 1}月${d.getDate()}日` }
 
     // ———— 界面状态保持 ————
     // 状态放在模块级（切到会话再切回来，组件卸载后仍在），需要时同步写入 localStorage（刷新、重启后恢复）。
@@ -223,6 +228,51 @@ window.__ModuleLoader__.load({
 .awb .wsgrid .ws{margin:0}
 .awb .srcrow{display:grid;grid-template-columns:24px 120px 130px 1fr 70px 96px auto;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--hair)}
 .awb .tabpage{padding-bottom:28px}
+/* —— 日历 —— */
+.awb .caltool{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:0 2px 12px}
+.awb .calwrap{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}
+@container (min-width:900px){.awb .calwrap{grid-template-columns:minmax(0,1fr) 220px}.awb .calwrap>aside{position:sticky;top:12px;align-self:start}}
+.awb .week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.awb .day{border-radius:14px;background:var(--soft);border:1px solid var(--hair);padding:8px 6px;min-height:220px;display:flex;flex-direction:column;gap:6px;transition:background .15s,box-shadow .15s}
+.awb .day header{display:flex;align-items:baseline;gap:5px;padding:0 4px}
+.awb .day .wd{font-size:11.5px;color:var(--muted);font-weight:600}
+.awb .day .dn{font-size:20px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.awb .day.today .dn{color:#fff;background:var(--acc);border-radius:999px;min-width:30px;text-align:center;font-size:16px;padding:1px 6px}
+.awb .day.past{opacity:.78}
+.awb .day.over,.awb .unsch.over{box-shadow:0 0 0 2px var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent)}
+.awb .day .items{display:flex;flex-direction:column;gap:5px;flex:1}
+.awb .day .none,.awb .unsch .none{color:var(--faint);font-size:12px;padding:4px}
+.awb .day footer{font-size:11px;color:var(--muted);padding:4px 4px 0;border-top:1px solid var(--hair)}
+.awb .day .add{border:0;background:none;color:var(--acc);font-size:17px;line-height:1;cursor:pointer;border-radius:8px;padding:2px 6px;opacity:.55}
+.awb .day:hover .add,.awb .day .add:focus{opacity:1}.awb .day .add:hover{background:var(--fill)}
+.awb .duebar{display:flex;flex-direction:column;gap:2px;padding:0 4px}.awb .duebar .link{font-size:11.5px;text-align:left;padding:0}
+.awb .ct{border-radius:9px;padding:6px 8px;background:var(--surface);border:1px solid var(--hair);border-left:3px solid var(--acc);cursor:grab;user-select:none;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.awb .ct:hover{box-shadow:0 2px 8px rgba(0,0,0,.1)}.awb .ct:active{cursor:grabbing}
+.awb .ct.growth{border-left-color:var(--growth)}.awb .ct.life{border-left-color:var(--life)}
+.awb .ct.done{cursor:pointer;opacity:.6;border-left-color:var(--faint)}.awb .ct.done .ctt{text-decoration:line-through}
+.awb .ct.late{background:color-mix(in srgb,var(--bad) 7%,var(--surface))}.awb .ct.late .ctm{color:var(--bad)}
+.awb .ctt{font-size:12.5px;font-weight:500;line-height:1.35;word-break:break-word}
+.awb .ctm{font-size:11px;color:var(--muted);margin-top:2px}
+.awb .unsch{border-radius:14px;background:var(--soft);border:1px dashed var(--line);padding:10px;display:flex;flex-direction:column;gap:6px;transition:background .15s,box-shadow .15s}
+.awb .mhead{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:4px}.awb .mhead span{font-size:11.5px;color:var(--muted);font-weight:600;text-align:center}
+.awb .month{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.awb .mc{appearance:none;font:inherit;color:inherit;text-align:left;border-radius:12px;background:var(--soft);border:1px solid var(--hair);padding:6px 7px;min-height:96px;display:flex;flex-direction:column;gap:3px;cursor:pointer;min-width:0}
+.awb .mc:hover{background:var(--fill)}.awb .mc.out{opacity:.4}.awb .mc.past .mchip{opacity:.75}
+.awb .mc .dn{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+.awb .mc.today .dn{color:#fff;background:var(--acc);border-radius:999px;padding:0 7px}
+.awb .mchip{font-size:11px;line-height:1.3;padding:1px 6px;border-radius:5px;background:color-mix(in srgb,var(--acc) 12%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.awb .mchip.growth{background:color-mix(in srgb,var(--growth) 14%,transparent)}.awb .mchip.life{background:color-mix(in srgb,var(--life) 16%,transparent)}
+.awb .mchip.done{background:var(--fill);color:var(--muted);text-decoration:line-through}.awb .mchip.late{color:var(--bad)}
+.awb .mc .more{font-size:11px;color:var(--muted)}.awb .mdone{font-size:11px;color:var(--ok);font-weight:600}
+.awb .dueDot{width:7px;height:7px;border-radius:50%;background:var(--bad)}
+.awb .modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.28);display:grid;place-items:center;padding:20px;animation:awbfade .2s}
+.awb .mcard2{width:min(520px,100%);max-height:90vh;overflow:auto;border-radius:20px;padding:18px 20px;background:var(--surface);box-shadow:0 20px 60px rgba(0,0,0,.3);animation:awbpop .3s cubic-bezier(.2,.9,.3,1.2)}
+.awb .mcard2 .ttl{flex:1;border:0;background:none;font-size:19px;font-weight:600;letter-spacing:-.01em;resize:none;outline:none;padding:2px 4px;border-radius:8px;line-height:1.35}
+.awb .mcard2 .ttl:focus{background:var(--fill)}
+.awb .mcard2 .form{display:grid;grid-template-columns:72px 1fr;gap:12px 10px;align-items:center;margin-top:16px}
+.awb .mcard2 input[type=date]{padding:4px 8px}
+@keyframes awbfade{from{opacity:0}to{opacity:1}}
+@container (max-width:700px){.awb .week{grid-template-columns:minmax(0,1fr)}.awb .day{min-height:0}.awb .mc{min-height:64px}.awb .mchip{display:none}}
 @container (max-width:760px){.awb .srcrow{grid-template-columns:24px 1fr 1fr}}
 @media (prefers-reduced-motion:reduce){.awb *{animation:none!important;transition:none!important}}
 `
@@ -319,7 +369,7 @@ window.__ModuleLoader__.load({
     const ORDER = ['importance', 'urgency', 'due']
 
     // 录入逻辑（状态在组件外保存，切走再回来仍在）
-    function useIntake({ onAdded, notify }) {
+    function useIntake({ onAdded, notify, planDate }) {
       const hello = { bot: '想做什么？随口说一句，比如「明天下班前把内链方案发给老板，挺急的」。' }
       const [msgs, setMsgs] = useKept('intake.msgs', [hello])
       const [draft, setDraft] = useKept('intake.draft', null)
@@ -358,8 +408,8 @@ window.__ModuleLoader__.load({
       const confirm = async () => {
         setBusy(true)
         try {
-          await api('POST', '/tasks', { title: draft.title, track: draft.track, importance: draft.importance, urgency: draft.urgency, estimateMin: draft.estimateMin ?? 30, due: draft.due === 'none' ? null : draft.due })
-          notify(`已加入：${draft.title}`); reset(); onAdded()
+          await api('POST', '/tasks', { title: draft.title, track: draft.track, importance: draft.importance, urgency: draft.urgency, estimateMin: draft.estimateMin ?? 30, due: draft.due === 'none' ? null : draft.due, ...(planDate ? { planDate } : {}) })
+          notify(`已加入：${draft.title}${planDate ? `（安排在 ${mdLabel(planDate)}）` : ''}`); reset(); onAdded()
         } catch (err) { notify(err.message, true) } finally { setBusy(false) }
       }
       const reask = (f) => { setAsk(f); say({ bot: ASK[f].q, field: f }) }
@@ -396,8 +446,8 @@ window.__ModuleLoader__.load({
     const focusDock = (mode, taskId) => dockBus.dispatchEvent(new CustomEvent('focus', { detail: { mode, taskId } }))
     const NOTE_KIND = [['done', '做了什么'], ['approach', '方案'], ['result', '结果'], ['issue', '问题']]
 
-    function Dock({ plan, act, reload, notify }) {
-      const it = useIntake({ onAdded: reload, notify })
+    function Dock({ plan, act, reload, notify, planDate, setPlanDate }) {
+      const it = useIntake({ onAdded: reload, notify, planDate })
       const [mode, setMode] = useKept('dock.mode', 'task')
       const [target, setTarget] = useKept('dock.target', null)
       const [kind, setKind] = useKept('dock.kind', 'done')
@@ -436,6 +486,9 @@ window.__ModuleLoader__.load({
             ? h('select', { className: 'in', value: targetId ?? '', 'aria-label': '选择任务', onChange: (e) => setTarget(e.target.value) }, tasks.map((t) => h('option', { key: t.id, value: t.id }, t.title)))
             : h('span', { className: 'muted' }, '先加一个任务')),
           mode === 'note' && h('span', { className: 'seg' }, NOTE_KIND.map(([k, l]) => h('button', { key: k, className: cx(kind === k && 'on'), onClick: () => setKind(k) }, l))),
+          mode === 'task' && setPlanDate && (planDate
+            ? h('span', { className: 'pill live' }, `安排在 ${mdLabel(planDate)}`, h('button', { className: 'link plain', style: { padding: 0, fontSize: 12 }, 'aria-label': '不指定日期', onClick: () => setPlanDate(null) }, '×'))
+            : h('span', { className: 'muted' }, '不指定日期，点某天的 ＋ 可安排')),
           mode === 'task' && it.active && folded && h('button', { className: 'link', onClick: () => setFolded(false) }, it.draft ? `继续录入「${it.draft.title}」` : '展开对话')),
         h('form', { className: 'composer', onSubmit: (e) => { e.preventDefault(); send() } },
           h('textarea', { ref: taRef, rows: Math.min(4, (value.match(/\n/g)?.length ?? 0) + 1), value, placeholder: ph, 'aria-label': ph,
@@ -840,6 +893,143 @@ window.__ModuleLoader__.load({
           h('pre', { className: 'md' }, out.markdown)))
     }
 
+
+    // ———————————————— 日历：周视图 / 月视图 ————————————————
+    const WK = ['一', '二', '三', '四', '五', '六', '日']
+    function CalTask({ x, onOpen, today }) {
+      const t = x.task ?? x
+      const done = t.status === 'done'
+      const steps = t.steps ?? []
+      return h('div', { className: cx('ct', t.track, done && 'done', x.overdue && !done && 'late'), draggable: !done, role: 'button', tabIndex: 0,
+        onDragStart: (e) => { e.dataTransfer.setData('text/plain', t.id); e.dataTransfer.effectAllowed = 'move' },
+        onClick: () => onOpen(t.id), onKeyDown: (e) => { if (e.key === 'Enter') onOpen(t.id) } },
+        h('div', { className: 'ctt' }, done && '✓ ', t.title),
+        h('div', { className: 'ctm' }, [
+          done ? (t.actualMin ? `专注 ${t.actualMin} 分钟` : '已完成') : `${t.adjustedEstimate ?? t.estimateMin} 分钟`,
+          !done && steps.length ? `${steps.filter((s) => s.done).length}/${steps.length} 步` : null,
+          x.byDue ? '截止日' : !done && t.due ? `截止 ${Number(t.due.slice(5, 7))}/${Number(t.due.slice(8))}` : null,
+          x.overdue && !done ? (x.byDue ? '已逾期' : '拖欠') : null,
+        ].filter(Boolean).join(' · ')))
+    }
+
+    function TaskSheet({ t, act, onClose }) {
+      const [title, setTitle] = useState(t.title)
+      useEffect(() => setTitle(t.title), [t.id, t.title])
+      useEffect(() => { const k = (e) => { if (e.key === 'Escape') onClose() }; addEventListener('keydown', k); return () => removeEventListener('keydown', k) }, [])
+      const done = t.status === 'done'
+      const p = (body, ok) => act.patch(t.id, body, ok)
+      return h('div', { className: 'modal', onClick: onClose },
+        h('div', { className: 'mcard2', role: 'dialog', 'aria-modal': true, 'aria-label': t.title, onClick: (e) => e.stopPropagation() },
+          h('div', { className: 'row', style: { flexWrap: 'nowrap', alignItems: 'flex-start' } },
+            h('button', { className: cx('ck', done && 'on'), style: { marginTop: 6 }, 'aria-label': done ? '撤销完成' : '标记完成', onClick: () => p({ status: done ? 'todo' : 'done' }, done ? '已撤销完成' : '完成！') }, done ? '✓' : ''),
+            h('textarea', { className: 'ttl', rows: 1, value: title, 'aria-label': '标题', onChange: (e) => setTitle(e.target.value.replace(/\n/g, '')),
+              onBlur: () => { const v = title.trim(); if (v && v !== t.title) p({ title: v }, '标题已更新'); else setTitle(t.title) } }),
+            h('button', { className: 'link plain', 'aria-label': '关闭', onClick: onClose, style: { fontSize: 18 } }, '×')),
+          h('div', { className: 'form' },
+            h('span', { className: 'muted' }, '类别'),
+            h('span', { className: 'seg' }, Object.entries(TRACK).map(([k, [l, ic]]) => h('button', { key: k, className: cx(t.track === k && 'on'), onClick: () => p({ track: k }) }, `${ic} ${l}`))),
+            h('span', { className: 'muted' }, '计划日期'),
+            h('span', { className: 'row' }, h('input', { className: 'in', type: 'date', value: t.planDate ?? '', onChange: (e) => p({ planDate: e.target.value || null }) }),
+              h('button', { className: 'link', onClick: () => p({ planDate: dkey() }) }, '今天'), h('button', { className: 'link', onClick: () => p({ planDate: addK(dkey(), 1) }) }, '明天'),
+              t.planDate && h('button', { className: 'link plain', onClick: () => p({ planDate: null }) }, '清除')),
+            h('span', { className: 'muted' }, '截止日期'),
+            h('span', { className: 'row' }, h('input', { className: 'in', type: 'date', value: t.due ?? '', onChange: (e) => p({ due: e.target.value || null }) }),
+              t.due && h('button', { className: 'link plain', onClick: () => p({ due: null }) }, '清除')),
+            h('span', { className: 'muted' }, '重要'), h(Stars, { value: t.importance, label: '重要', onChange: (v) => p({ importance: v }) }),
+            h('span', { className: 'muted' }, '紧急'), h(Stars, { value: t.urgency, label: '紧急', onChange: (v) => p({ urgency: v }) }),
+            h('span', { className: 'muted' }, '进度'), h('span', null, `${(t.steps ?? []).filter((s) => s.done).length}/${(t.steps ?? []).length} 步 · 约 ${t.adjustedEstimate ?? t.estimateMin} 分钟${t.actualMin ? ` · 已专注 ${t.actualMin} 分钟` : ''}`)),
+          h('div', { className: 'row', style: { marginTop: 18 } },
+            !done && h('button', { className: 'btn pri', onClick: () => p({ status: 'done' }, '完成！').then(onClose) }, '标记完成'),
+            done && h('button', { className: 'btn', onClick: () => p({ status: 'todo' }, '已撤销完成') }, '撤销完成'),
+            h('span', { className: 'grow' }),
+            h('button', { className: 'link danger', onClick: () => { if (confirm(`删除「${t.title}」？`)) act.remove(t.id).then(onClose) } }, '删除'))))
+    }
+
+    function CalendarView(props) {
+      const [mode, setMode] = useKept('cal.mode', 'week')
+      const [anchor, setAnchor] = useKept('cal.anchor', dkey())
+      const [planDate, setPlanDate] = useKept('cal.planDate', null)
+      const [openId, setOpenId] = useKept('cal.open', null)
+      const [data, setData] = useState(null)
+      const [over, setOver] = useState(null)
+      const today = dkey()
+      const from = mode === 'week' ? weekOf(anchor) : weekOf(anchor.slice(0, 8) + '01')
+      const to = addK(from, mode === 'week' ? 6 : 41)
+      const load = useCallback(() => api('GET', `/calendar?from=${from}&to=${to}`).then(setData).catch((e) => props.notify(e.message, true)), [from, to])
+      useEffect(() => { load() }, [load])
+      const reloadAll = useCallback(async () => { await Promise.all([load(), props.reload()]) }, [load, props.reload])
+      const act = useActions({ reload: reloadAll, notify: props.notify })
+      const move = (id, date) => {
+        const t = findT(id); if (!t || (t.planDate ?? null) === date) return
+        act.patch(id, { planDate: date }, date ? `已安排到 ${mdLabel(date)}` : '已移到未安排')
+      }
+      const allT = data ? [...data.days.flatMap((d) => [...d.tasks.map((x) => x.task), ...d.done, ...d.dues]), ...data.unscheduled] : []
+      const findT = (id) => allT.find((t) => t.id === id)
+      const openT = openId && findT(openId)
+      const dropZone = (key, date) => ({
+        onDragOver: (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; if (over !== key) setOver(key) },
+        onDragLeave: (e) => { if (!e.currentTarget.contains(e.relatedTarget)) setOver(null) },
+        onDrop: (e) => { e.preventDefault(); setOver(null); const id = e.dataTransfer.getData('text/plain'); if (id) move(id, date) },
+      })
+      const addOn = (date) => { setPlanDate(date); focusDock('task') }
+      const step = (n) => setAnchor(mode === 'week' ? addK(anchor, 7 * n) : (() => { const d = kdate(anchor.slice(0, 8) + '01'); d.setMonth(d.getMonth() + n); return dkey(d) })())
+      const a = kdate(anchor)
+      const title = mode === 'week'
+        ? (() => { const f = kdate(from), t2 = kdate(to); return f.getMonth() === t2.getMonth() ? `${f.getFullYear()}年${f.getMonth() + 1}月 ${f.getDate()}–${t2.getDate()}日` : `${f.getMonth() + 1}月${f.getDate()}日 – ${t2.getMonth() + 1}月${t2.getDate()}日` })()
+        : `${a.getFullYear()}年${a.getMonth() + 1}月`
+
+      const week = () => h('div', { className: 'calwrap' },
+        h('div', { className: 'week' }, data.days.map((d, i) => {
+          const past = d.date < today, isToday = d.date === today
+          const items = [...d.tasks, ...d.done.map((t) => ({ task: t }))]
+          return h('section', { key: d.date, className: cx('day', isToday && 'today', past && 'past', over === d.date && 'over'), ...dropZone(d.date, d.date), 'aria-label': mdLabel(d.date) },
+            h('header', null,
+              h('span', { className: 'wd' }, `周${WK[i]}`),
+              h('span', { className: 'dn' }, kdate(d.date).getDate()),
+              h('span', { className: 'grow' }),
+              !past && h('button', { className: 'add', title: `在 ${mdLabel(d.date)} 加任务`, 'aria-label': `在 ${mdLabel(d.date)} 加任务`, onClick: () => addOn(d.date) }, '＋')),
+            h('div', { className: 'items' },
+              items.map((x) => h(CalTask, { key: (x.task ?? x).id, x, onOpen: setOpenId, today })),
+              !items.length && h('div', { className: 'none' }, past ? '' : '空')),
+            d.dues.length > 0 && h('div', { className: 'duebar' }, d.dues.map((t) => h('button', { key: t.id, className: 'link danger', onClick: () => setOpenId(t.id) }, `截止：${t.title}`))),
+            (past || isToday) && (d.done.length || d.focusMin) ? h('footer', null, `完成 ${d.done.length} 项 · 专注 ${d.focusMin} 分钟`) : null)
+        })),
+        h('aside', { className: cx('unsch', over === 'none' && 'over'), ...dropZone('none', null) },
+          h('h4', { style: { marginTop: 0 } }, `未安排 ${data.unscheduled.length}`),
+          data.unscheduled.length ? data.unscheduled.map((t) => h(CalTask, { key: t.id, x: { task: t }, onOpen: setOpenId, today }))
+            : h('div', { className: 'none' }, '没有未安排的任务'),
+          h('p', { className: 'muted', style: { fontSize: 11.5, marginTop: 8 } }, '拖到某一天就安排在那天；拖回这里取消安排。')))
+
+      const month = () => {
+        const m = anchor.slice(0, 7)
+        return h('div', null,
+          h('div', { className: 'mhead' }, WK.map((w) => h('span', { key: w }, w))),
+          h('div', { className: 'month' }, data.days.map((d) => {
+            const items = [...d.tasks, ...d.done.map((t) => ({ task: t }))]
+            return h('button', { key: d.date, className: cx('mc', d.date.slice(0, 7) !== m && 'out', d.date === today && 'today', d.date < today && 'past'),
+              onClick: () => { setAnchor(d.date); setMode('week') }, 'aria-label': `${mdLabel(d.date)}，${items.length} 项，切到这一周` },
+              h('div', { className: 'row', style: { gap: 4 } }, h('span', { className: 'dn' }, kdate(d.date).getDate()), h('span', { className: 'grow' }),
+                d.dues.length > 0 && h('span', { className: 'dueDot', title: `${d.dues.length} 项截止` }),
+                d.done.length > 0 && h('span', { className: 'mdone' }, `✓${d.done.length}`)),
+              items.slice(0, 3).map((x) => { const t = x.task ?? x; return h('span', { key: t.id, className: cx('mchip', t.track, t.status === 'done' && 'done', x.overdue && t.status !== 'done' && 'late') }, t.title) }),
+              items.length > 3 && h('span', { className: 'more' }, `+${items.length - 3}`))
+          })))
+      }
+
+      return h('div', { className: 'today' },
+        h('header', { className: 'large' }, h('h1', null, '日历'), h('p', null, '拖动任务改安排的日子；点任务看详情。')),
+        h('div', { className: 'caltool' },
+          h('span', { className: 'seg' }, [['week', '周'], ['month', '月']].map(([k, l]) => h('button', { key: k, className: cx(mode === k && 'on'), onClick: () => setMode(k) }, l))),
+          h('button', { className: 'btn', 'aria-label': '上一页', onClick: () => step(-1) }, '‹'),
+          h('button', { className: 'btn', onClick: () => setAnchor(today) }, '今天'),
+          h('button', { className: 'btn', 'aria-label': '下一页', onClick: () => step(1) }, '›'),
+          h('h3', { style: { marginLeft: 6 } }, title)),
+        !data ? h('p', { className: 'muted' }, '加载中…') : mode === 'week' ? week() : month(),
+        openT && h(TaskSheet, { t: openT, act, onClose: () => setOpenId(null) }),
+        h('div', { style: { height: 20 } }),
+        props.plan && h(Dock, { ...props, act, reload: reloadAll, planDate, setPlanDate }))
+    }
+
     function App() {
       const [tab, setTab] = useKept('app.tab', 'today')
       const [toast, setToast] = useState(null)
@@ -850,7 +1040,7 @@ window.__ModuleLoader__.load({
       useEffect(() => { reload(); api('GET', '/status').then(setStatus).catch(() => {}) }, [reload])
       useEffect(() => { const t = setInterval(reload, 60000); return () => clearInterval(t) }, [reload])
       const shared = { plan, reload, notify, status, goSettings: () => setTab('settings') }
-      const tabs = [['today', '今日'], ['ideas', '灵感库'], ['ws', '工作区'], ['coach', '教练'], ['growth', '成长'], ['report', '汇报'], ['settings', '设置']]
+      const tabs = [['today', '今日'], ['cal', '日历'], ['ideas', '灵感库'], ['ws', '工作区'], ['coach', '教练'], ['growth', '成长'], ['report', '汇报'], ['settings', '设置']]
       const tabsView = { today: Today, ideas: Ideas, ws: Workspaces, coach: Coach, growth: Growth, report: Report, settings: Settings }
       const View = tabsView[tab] ?? Today
       return h('div', { className: 'awb' }, h('style', null, css),
@@ -858,9 +1048,9 @@ window.__ModuleLoader__.load({
         h('div', { className: 'topbar' },
           h('nav', { className: 'tabs', role: 'tablist' }, tabs.map(([id, label]) => h('button', { key: id, role: 'tab', 'aria-selected': tab === id, className: cx('tab', tab === id && 'on'), onClick: () => setTab(id) }, label))),
           h('span', { className: 'grow' }),
-          plan?.active && tab !== 'today' && h('button', { className: 'pill live', style: { border: 0, cursor: 'pointer' }, onClick: () => setTab('today') }, '● 专注中'),
+          plan?.active && tab !== 'today' && tab !== 'cal' && h('button', { className: 'pill live', style: { border: 0, cursor: 'pointer' }, onClick: () => setTab('today') }, '● 专注中'),
           status && h('span', { className: 'pill', title: status.ai.available ? `${status.ai.provider}/${status.ai.model}` : '模型不可用，使用规则兜底' }, status.ai.available ? 'AI 就绪' : '规则模式')),
-        tab === 'today' ? h(Today, shared) : h('div', { className: 'tabpage', style: { marginTop: 12 } }, h(View, shared)))
+        tab === 'today' ? h(Today, shared) : tab === 'cal' ? h(CalendarView, shared) : h('div', { className: 'tabpage', style: { marginTop: 12 } }, h(View, shared)))
     }
 
     // 左侧栏图标（宿主传入 size）
