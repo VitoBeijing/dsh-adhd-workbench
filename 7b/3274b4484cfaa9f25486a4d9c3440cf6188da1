@@ -1,0 +1,52 @@
+lib/intake.js
+  s_ad4c8a4643dfaa::t_dd8d824766286c 90
+  s_ad4c8a4643dfaa::t_8e6efcddd53208 1-43,46-68,70-71,77-89,91-152
+  s_ad4c8a4643dfaa::t_c57c738a00ed3f 69,72-76
+  s_ad4c8a4643dfaa::t_e52b995c0dcfe9 44-45
+client/index.js
+  s_ad4c8a4643dfaa::t_6583933324e2be 315
+  s_ad4c8a4643dfaa::t_f081eb72cde7a9 383
+  s_ad4c8a4643dfaa::t_3855c17f12ff2f 558-559
+  s_ad4c8a4643dfaa::t_df32630572eee4 400-402,404-444
+  s_ad4c8a4643dfaa::t_5440922afc4cc5 572-579,581-582,584,586-593
+  s_ad4c8a4643dfaa::t_2437d93a086180 179-259
+  s_ad4c8a4643dfaa::t_0d56bbcb362198 387,389-394
+  s_ad4c8a4643dfaa::t_bde1622aed9fa4 93-101
+lib/ai.js
+  s_ad4c8a4643dfaa::t_26f579ea356896 2
+  s_ad4c8a4643dfaa::t_aefadce8446c15 119,127
+  s_ad4c8a4643dfaa::t_a01dd4ba35b009 114-118,120-126,128-129
+  s_ad4c8a4643dfaa::t_7206cf0b004f8f 69,78-84
+lib/api.js
+  s_ad4c8a4643dfaa::t_a3c9c342166639 215-220,223-229
+  s_ad4c8a4643dfaa::t_a57ff2b051a782 56-57
+  s_ad4c8a4643dfaa::t_1f368371846262 2
+README.md
+  s_ad4c8a4643dfaa::t_3672431eae88c2 3,9,11-12,35,43-44,60,62
+lib/agents.js
+  s_ad4c8a4643dfaa::t_ceeb3dc20e3c88 1-212
+test/intake-agents.test.js
+  s_ad4c8a4643dfaa::t_408395a2b36556 1-5,8-48,67-79,81-96
+  s_ad4c8a4643dfaa::t_201200a061456d 80
+  s_ad4c8a4643dfaa::t_399da3e6fa00e1 6-7
+  s_ad4c8a4643dfaa::t_05fc9fe6ef179b 49-66
+test/api.test.js
+  s_ad4c8a4643dfaa::t_edb8aec9415ab7 80-101
+  s_ad4c8a4643dfaa::t_536049e4915035 15,17
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "7b3274b4484cfaa9f25486a4d9c3440cf6188da1",
+  "prompts": {},
+  "sessions": {
+    "s_ad4c8a4643dfaa": {
+      "agent_id": {
+        "tool": "deepseekharness",
+        "id": "session-df26e8c7-5718-4e87-81df-67640ccc8a54",
+        "model": "kr-claude-opus-5.5"
+      },
+      "human_author": "VitoBeijing <43870892+VitoBeijing@users.noreply.github.com>"
+    }
+  }
+}
