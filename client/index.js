@@ -18,6 +18,43 @@ window.__ModuleLoader__.load({
     const fmtClock = (ms) => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` }
     const ago = (t) => { if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 1 ? '刚刚' : m < 60 ? `${m} 分钟前` : m < 1440 ? `${Math.round(m / 60)} 小时前` : `${Math.round(m / 1440)} 天前` }
     const cx = (...xs) => xs.filter(Boolean).join(' ')
+
+    // ———— 界面状态保持 ————
+    // 状态放在模块级（切到会话再切回来，组件卸载后仍在），需要时同步写入 localStorage（刷新、重启后恢复）。
+    // 组件卸载后 AI 结果才回来，setter 也照样写进存储，切回来就能看到。
+    const LS_PREFIX = 'adhd-workbench:ui:'
+    const MAX_BYTES = 200 * 1024
+    const mem = new Map()
+    const subs = new Map()
+    const loadLs = (key) => { try { const v = localStorage.getItem(LS_PREFIX + key); return v == null ? undefined : JSON.parse(v) } catch { return undefined } }
+    const saveLs = (key, v) => {
+      try {
+        if (v === undefined || v === null || v === '') return localStorage.removeItem(LS_PREFIX + key)
+        const json = JSON.stringify(v)
+        if (json.length > MAX_BYTES) return // 太大就不存，避免撑爆浏览器存储
+        localStorage.setItem(LS_PREFIX + key, json)
+      } catch { /* 存储满或被禁用时忽略 */ }
+    }
+    function setStored(key, next, persist) {
+      const prev = mem.get(key)
+      const v = typeof next === 'function' ? next(prev) : next
+      if (Object.is(v, prev)) return
+      mem.set(key, v)
+      if (persist) saveLs(key, v)
+      for (const fn of subs.get(key) ?? []) fn(v)
+    }
+    /** 和 useState 一样用，但值按 key 保存在组件外。persist=false 时只在本次打开期间保留（用于「分析中」这类临时状态）。 */
+    function useKept(key, init, persist = true) {
+      if (!mem.has(key)) { const saved = persist ? loadLs(key) : undefined; mem.set(key, saved !== undefined ? saved : typeof init === 'function' ? init() : init) }
+      const [v, setV] = useState(() => mem.get(key))
+      useEffect(() => {
+        let set = subs.get(key); if (!set) subs.set(key, (set = new Set()))
+        set.add(setV); if (!Object.is(mem.get(key), v)) setV(mem.get(key))
+        return () => set.delete(setV)
+      }, [key])
+      const setter = useCallback((next) => setStored(key, next, persist), [key, persist])
+      return [v, setter]
+    }
     function download(name, text, type) {
       const url = URL.createObjectURL(new Blob([text], { type }))
       const a = document.createElement('a'); a.href = url; a.download = name; a.click()
@@ -189,11 +226,11 @@ window.__ModuleLoader__.load({
 
     function IntakeChat({ onAdded, notify }) {
       const hello = { bot: '想做什么？随口说一句就行，比如「明天下班前把内链方案发给老板，挺急的」。' }
-      const [msgs, setMsgs] = useState([hello])
-      const [draft, setDraft] = useState(null)
-      const [ask, setAsk] = useState(null) // 正在追问的字段
-      const [text, setText] = useState('')
-      const [busy, setBusy] = useState(false)
+      const [msgs, setMsgs] = useKept('intake.msgs', [hello])
+      const [draft, setDraft] = useKept('intake.draft', null)
+      const [ask, setAsk] = useKept('intake.ask', null) // 正在追问的字段
+      const [text, setText] = useKept('intake.text', '')
+      const [busy, setBusy] = useKept('intake.busy', false, false)
       const endRef = useRef(null)
       useEffect(() => { endRef.current?.scrollIntoView({ block: 'nearest' }) }, [msgs, ask])
       const say = (m) => setMsgs((x) => [...x, m])
@@ -261,9 +298,9 @@ window.__ModuleLoader__.load({
 
     function TaskCard({ t, index, act, isCurrent, dim, onSwap }) {
       const [open, setOpen] = useState(isCurrent)
-      const [stepText, setStepText] = useState('')
-      const [noteText, setNoteText] = useState('')
-      const [noteKind, setNoteKind] = useState('done')
+      const [stepText, setStepText] = useKept(`card.${t.id}.step`, '')
+      const [noteText, setNoteText] = useKept(`card.${t.id}.note`, '')
+      const [noteKind, setNoteKind] = useKept(`card.${t.id}.kind`, 'done')
       const steps = t.steps ?? []
       const doneN = steps.filter((s) => s.done).length
       const nextStep = steps.find((s) => !s.done)
@@ -308,7 +345,7 @@ window.__ModuleLoader__.load({
     function Today(props) {
       const { plan } = props
       const act = useActions(props)
-      const [showBacklog, setShowBacklog] = useState(false)
+      const [showBacklog, setShowBacklog] = useKept('today.backlog', false)
       if (!plan) return h('p', { className: 'muted' }, '加载中…')
       const swap = (t) => { const alt = plan.backlog[0] ?? plan.small[0]; if (!alt) return props.notify('任务池里没有可替换的任务', true); act.patch(t.id, { snoozeDate: true }).then(() => act.patch(alt.id, { pinnedDate: true }, `已换成「${alt.title}」，原任务明天再排`)) }
       return h(Fragment, null,
@@ -333,15 +370,15 @@ window.__ModuleLoader__.load({
     // ———————————————— 灵感库 ————————————————
     function Ideas({ notify, reload }) {
       const [ideas, setIdeas] = useState(null)
-      const [text, setText] = useState('')
-      const [cat, setCat] = useState('all')
-      const [sub, setSub] = useState('all')
-      const [q, setQ] = useState('')
-      const [busy, setBusy] = useState(false)
+      const [text, setText] = useKept('ideas.text', '')
+      const [cat, setCat] = useKept('ideas.cat', 'all')
+      const [sub, setSub] = useKept('ideas.sub', 'all')
+      const [q, setQ] = useKept('ideas.q', '')
+      const [busy, setBusy] = useKept('ideas.busy', false, false)
       const load = () => api('GET', '/ideas').then((r) => setIdeas(r.ideas)).catch((e) => notify(e.message, true))
       useEffect(() => { load() }, [])
-      const [preview, setPreview] = useState(null) // { items, source, rawText, replaceId }
-      const [openRaw, setOpenRaw] = useState({})
+      const [preview, setPreview] = useKept('ideas.preview', null) // { items, source, rawText, replaceId }
+      const [openRaw, setOpenRaw] = useKept('ideas.openRaw', {})
       const topRef = useRef(null)
       // 先让 AI 拆分成多条，出预览；用户确认后才入库
       const split = async (raw, replaceId) => {
@@ -360,8 +397,8 @@ window.__ModuleLoader__.load({
           setPreview(null); load()
         } catch (err) { notify(err.message, true) } finally { setBusy(false) }
       }
-      const editItem = (k, patchObj) => setPreview({ ...preview, items: preview.items.map((x, j) => (j === k ? { ...x, ...patchObj } : x)) })
-      const dropItem = (k) => setPreview({ ...preview, items: preview.items.filter((_x, j) => j !== k) })
+      const editItem = (k, patchObj) => setPreview((pv) => ({ ...pv, items: pv.items.map((x, j) => (j === k ? { ...x, ...patchObj } : x)) }))
+      const dropItem = (k) => setPreview((pv) => ({ ...pv, items: pv.items.filter((_x, j) => j !== k) }))
       // 合并：正文拼接，分类沿用前一条
       const mergeDown = (k) => {
         const a = preview.items[k], b = preview.items[k + 1]; if (!b) return
@@ -432,7 +469,7 @@ window.__ModuleLoader__.load({
       const [data, setData] = useState(null)
       const load = () => api('GET', '/workspaces').then(setData).catch((e) => notify(e.message, true))
       useEffect(() => { load(); const t = setInterval(load, 30000); return () => clearInterval(t) }, [])
-      const [closed, setClosed] = useState({})
+      const [closed, setClosed] = useKept('ws.closed', {})
       if (!data) return h('p', { className: 'muted' }, '读取工作区…')
       const section = (src) => h('section', { key: src.id, className: 'src' },
         h('div', { className: 'hd', onClick: () => setClosed({ ...closed, [src.id]: !closed[src.id] }) },
@@ -456,19 +493,20 @@ window.__ModuleLoader__.load({
 
     // ———————————————— 设置：Agent 来源 ————————————————
     function Settings({ notify }) {
-      const [list, setList] = useState(null)
+      const [list, setList] = useKept('settings.list', null)
       const [types, setTypes] = useState([])
-      const [dirty, setDirty] = useState(false)
-      const load = () => api('GET', '/sources').then((r) => { setList(r.sources); setTypes(r.types); setDirty(false) }).catch((e) => notify(e.message, true))
+      const [dirty, setDirty] = useKept('settings.dirty', false)
+      // 有没保存的修改时保留修改，只刷新类型列表
+      const load = (force) => api('GET', '/sources').then((r) => { setTypes(r.types); if (force || !mem.get('settings.dirty')) { setList(r.sources); setDirty(false) } }).catch((e) => notify(e.message, true))
       useEffect(() => { load() }, [])
-      if (!list) return h('p', { className: 'muted' }, '加载中…')
+      if (!list || !types.length) return h('p', { className: 'muted' }, '加载中…')
       const typeOf = (t) => types.find((x) => x.type === t)
       const upd = (i, patch) => { setList(list.map((s, k) => (k === i ? { ...s, ...patch } : s))); setDirty(true) }
       const move = (i, d) => { const j = i + d; if (j < 0 || j >= list.length) return; const n = [...list]; [n[i], n[j]] = [n[j], n[i]]; setList(n); setDirty(true) }
       const del = (i) => { setList(list.filter((_s, k) => k !== i)); setDirty(true) }
       const add = () => { const t = types[0]; setList([...list, { id: `${t.type}-${Date.now().toString(36)}`, type: t.type, label: t.label, path: t.defaultPath, enabled: true, maxWorkspaces: 6 }]); setDirty(true) }
       const save = () => api('PUT', '/sources', { sources: list }).then((r) => { setList(r.sources); setDirty(false); notify('已保存，工作区看板会按这个顺序显示') }).catch((e) => notify(e.message, true))
-      const reset = () => { if (confirm('恢复成自动检测的默认配置？')) api('POST', '/sources/reset', {}).then(() => { load(); notify('已恢复默认') }).catch((e) => notify(e.message, true)) }
+      const reset = () => { if (confirm('恢复成自动检测的默认配置？')) api('POST', '/sources/reset', {}).then(() => { load(true); notify('已恢复默认') }).catch((e) => notify(e.message, true)) }
       return h(Fragment, null,
         h('h4', { style: { marginTop: 0 } }, 'Agent 来源（工作区看板按这里的顺序从上到下显示）'),
         h('div', { className: 'card' },
@@ -488,15 +526,16 @@ window.__ModuleLoader__.load({
             h('button', { className: 'btn', onClick: add }, '＋ 添加 Agent'),
             h('span', { className: 'grow' }),
             h('button', { className: 'btn ghost', onClick: reset }, '恢复默认'),
+            dirty && h('button', { className: 'btn ghost', onClick: () => load(true) }, '放弃修改'),
             h('button', { className: 'btn pri', disabled: !dirty, onClick: save }, dirty ? '保存' : '已保存'))),
         h('p', { className: 'muted', style: { marginTop: 8 } }, '支持 DeepSeek Harness、Codex、Claude Code、OpenCode、WorkBuddy。同一种 Agent 可以加多个（比如两个 Codex 数据目录）。插件只读这些目录，不会改动里面的数据。'))
     }
 
     // ———————————————— 教练 ————————————————
     function Coach({ notify, reload }) {
-      const [msgs, setMsgs] = useState([])
-      const [text, setText] = useState('')
-      const [busy, setBusy] = useState(false)
+      const [msgs, setMsgs] = useKept('coach.msgs', [])
+      const [text, setText] = useKept('coach.text', '')
+      const [busy, setBusy] = useKept('coach.busy', false, false)
       const send = async (e) => {
         e?.preventDefault(); const m = text.trim(); if (!m) return
         setMsgs((x) => [...x, { me: m }]); setText(''); setBusy(true)
@@ -505,7 +544,8 @@ window.__ModuleLoader__.load({
       const addTask = async (t) => { try { await api('POST', '/tasks', t); notify(`已加入任务：${t.title}`); reload() } catch (e) { notify(e.message, true) } }
       const label = { high: '清晰', medium: '还差一点', low: '还比较模糊' }
       return h(Fragment, null,
-        h('p', { className: 'muted' }, '说说你现在想做的事或遇到的问题。教练会帮你把它说具体：对象、第一步动作、交付物、完成标准、时间。'),
+        h('div', { className: 'row' }, h('p', { className: 'muted grow' }, '说说你现在想做的事或遇到的问题。教练会帮你把它说具体：对象、第一步动作、交付物、完成标准、时间。'),
+          msgs.length > 0 && h('button', { className: 'btn ghost', onClick: () => { if (confirm('清空这段教练对话？')) setMsgs([]) } }, '清空对话')),
         h('div', { style: { minHeight: 120 } }, msgs.length === 0 && h('div', { className: 'msg coach' }, '👋 试试说一句：「SEO 那块感觉有点乱，想优化一下」'),
           msgs.map((m, i) => m.me ? h('div', { key: i, className: 'msg me' }, m.me) : h('div', { key: i, className: 'msg coach' },
             h('div', null, '表达清晰度：', h('span', { className: cx('clar', m.coach.clarity) }, label[m.coach.clarity]), m.coach.missing.length > 0 && h('span', { className: 'muted' }, ` · 缺：${m.coach.missing.join('、')}`)),
@@ -558,12 +598,13 @@ window.__ModuleLoader__.load({
     // ———————————————— 汇报 ————————————————
     function Report({ notify }) {
       const [tasks, setTasks] = useState(null)
-      const [sel, setSel] = useState(new Set())
-      const [days, setDays] = useState(7)
-      const [title, setTitle] = useState('')
-      const [audience, setAudience] = useState('')
-      const [out, setOut] = useState(null)
-      const [busy, setBusy] = useState(false)
+      const [selList, setSelList] = useKept('report.sel', [])
+      const sel = new Set(selList), setSel = (n) => setSelList([...n])
+      const [days, setDays] = useKept('report.days', 7)
+      const [title, setTitle] = useKept('report.title', '')
+      const [audience, setAudience] = useKept('report.audience', '')
+      const [out, setOut] = useKept('report.out', null)
+      const [busy, setBusy] = useKept('report.busy', false, false)
       useEffect(() => { api('GET', '/tasks').then((r) => setTasks(r.tasks.filter((t) => t.status !== 'dropped'))).catch((e) => notify(e.message, true)) }, [])
       const gen = async () => {
         setBusy(true)
@@ -595,7 +636,7 @@ window.__ModuleLoader__.load({
     }
 
     function App() {
-      const [tab, setTab] = useState('today')
+      const [tab, setTab] = useKept('app.tab', 'today')
       const [toast, setToast] = useState(null)
       const [plan, setPlan] = useState(null)
       const [status, setStatus] = useState(null)
