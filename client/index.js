@@ -340,10 +340,33 @@ window.__ModuleLoader__.load({
       const [busy, setBusy] = useState(false)
       const load = () => api('GET', '/ideas').then((r) => setIdeas(r.ideas)).catch((e) => notify(e.message, true))
       useEffect(() => { load() }, [])
-      const add = async (e) => {
-        e.preventDefault(); if (!text.trim()) return
+      const [preview, setPreview] = useState(null) // { items, source, rawText, replaceId }
+      const [openRaw, setOpenRaw] = useState({})
+      const topRef = useRef(null)
+      // 先让 AI 拆分成多条，出预览；用户确认后才入库
+      const split = async (raw, replaceId) => {
         setBusy(true)
-        try { const { idea } = await api('POST', '/ideas', { text: text.trim() }); setText(''); notify(`💡 已收进「${IDEA_CAT[idea.category][0]} / ${idea.subcategory}」`); load() } catch (err) { notify(err.message, true) } finally { setBusy(false) }
+        try { const r = await api('POST', '/ideas/split', { text: raw }); setPreview({ items: r.items, source: r.source, rawText: raw, replaceId }) } catch (err) { notify(err.message, true) } finally { setBusy(false) }
+      }
+      const add = (e) => { e.preventDefault(); if (text.trim() && !busy) split(text.trim()) }
+      const saveAll = async () => {
+        const items = preview.items.filter((i) => i.text.trim())
+        if (!items.length) return notify('至少保留一条', true)
+        setBusy(true)
+        try {
+          await api('POST', '/ideas/batch', { items: items.map((i) => ({ ...i, source: preview.source })), rawText: preview.rawText, replaceId: preview.replaceId })
+          notify(preview.replaceId ? `已拆成 ${items.length} 条，替换了原来那条` : `💡 收进 ${items.length} 条灵感`)
+          if (!preview.replaceId) setText('')
+          setPreview(null); load()
+        } catch (err) { notify(err.message, true) } finally { setBusy(false) }
+      }
+      const editItem = (k, patchObj) => setPreview({ ...preview, items: preview.items.map((x, j) => (j === k ? { ...x, ...patchObj } : x)) })
+      const dropItem = (k) => setPreview({ ...preview, items: preview.items.filter((_x, j) => j !== k) })
+      // 合并：正文拼接，分类沿用前一条
+      const mergeDown = (k) => {
+        const a = preview.items[k], b = preview.items[k + 1]; if (!b) return
+        const merged = { ...a, text: `${a.text}；${b.text}`, raw: [a.raw, b.raw].filter(Boolean).join('\n'), tags: [...new Set([...(a.tags ?? []), ...(b.tags ?? [])])].slice(0, 6), nextAction: a.nextAction || b.nextAction }
+        setPreview({ ...preview, items: [...preview.items.slice(0, k), merged, ...preview.items.slice(k + 2)] })
       }
       const patch = (id, body) => api('PATCH', `/ideas/${id}`, body).then(load).catch((e) => notify(e.message, true))
       const del = (id) => api('DELETE', `/ideas/${id}`).then(load).catch((e) => notify(e.message, true))
@@ -356,9 +379,29 @@ window.__ModuleLoader__.load({
       const shown = inCat.filter((i) => (sub === 'all' || i.subcategory === sub) && (!q || `${i.text} ${i.subcategory} ${(i.tags ?? []).join(' ')}`.toLowerCase().includes(q.toLowerCase())))
         .sort((a, b) => (b.starred - a.starred) || (b.createdAt - a.createdAt))
       return h(Fragment, null,
-        h('form', { className: 'card', onSubmit: add },
-          h('textarea', { className: 'in', rows: 2, placeholder: '脑子里冒出什么就丢进来，不用整理，AI 会帮你分类。专注时冒出的念头也放这里，回头再说。', value: text, onChange: (e) => setText(e.target.value), onKeyDown: (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) add(e) } }),
-          h('div', { className: 'row', style: { marginTop: 6 } }, h('span', { className: 'muted grow' }, '⌘/Ctrl + Enter 快速保存'), h('button', { className: 'btn pri', disabled: busy }, busy ? '分类中…' : '💡 收进灵感库'))),
+        h('div', { ref: topRef }),
+        preview ? h('div', { className: 'card', style: { borderColor: 'var(--acc)' } },
+          h('div', { className: 'row' },
+            h('h3', { className: 'grow' }, `${preview.replaceId ? '重新拆分' : '拆出'} ${preview.items.length} 条，确认一下`),
+            h('span', { className: 'muted' }, preview.source === 'ai' ? '🤖 AI 拆分' : '⚙️ 规则模式（模型没响应，按换行和编号拆）')),
+          h('p', { className: 'muted', style: { margin: '4px 0 8px' } }, '可以改文字、改分类、删掉，或把相邻两条合并。'),
+          preview.items.map((it, k) => h('div', { key: k, className: 'card', style: { marginBottom: 8, background: 'transparent' } },
+            h('div', { className: 'row' },
+              h('b', { className: 'muted' }, `${k + 1}.`),
+              h('select', { className: 'in', style: { padding: '1px 4px', fontSize: 12 }, value: it.category, 'aria-label': '大类', onChange: (e) => editItem(k, { category: e.target.value }) }, Object.entries(IDEA_CAT).map(([c, [l, ic]]) => h('option', { key: c, value: c }, `${ic} ${l}`))),
+              h('input', { className: 'in', style: { width: 110, padding: '1px 6px', fontSize: 12 }, value: it.subcategory, 'aria-label': '小类', onChange: (e) => editItem(k, { subcategory: e.target.value }) }),
+              h('span', { className: 'grow' }),
+              k < preview.items.length - 1 && h('button', { className: 'btn ghost', title: '和下一条合并', onClick: () => mergeDown(k) }, '⤓ 合并下一条'),
+              h('button', { className: 'btn ghost danger', 'aria-label': '删除这条', onClick: () => dropItem(k) }, '×')),
+            h('textarea', { className: 'in', rows: 1, style: { marginTop: 6 }, value: it.text, 'aria-label': '灵感内容', onChange: (e) => editItem(k, { text: e.target.value }) }),
+            it.nextAction && h('p', { className: 'muted' }, `下一步：${it.nextAction}`),
+            it.raw && it.raw !== it.text && h('p', { className: 'muted', style: { whiteSpace: 'pre-wrap' } }, `原话：${it.raw}`))),
+          h('div', { className: 'row', style: { marginTop: 4 } },
+            h('button', { className: 'btn pri', disabled: busy || !preview.items.length, onClick: saveAll }, busy ? '保存中…' : preview.replaceId ? `✓ 替换成这 ${preview.items.length} 条` : `✓ 全部入库（${preview.items.length}）`),
+            h('button', { className: 'btn ghost', disabled: busy, onClick: () => setPreview(null) }, '取消')))
+        : h('form', { className: 'card', onSubmit: add },
+          h('textarea', { className: 'in', rows: 3, placeholder: '脑子里冒出什么就丢进来，一次写好几件也行，AI 会拆成多条并分别分类。专注时冒出的念头也放这里，回头再说。', value: text, onChange: (e) => setText(e.target.value), onKeyDown: (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) add(e) } }),
+          h('div', { className: 'row', style: { marginTop: 6 } }, h('span', { className: 'muted grow' }, '⌘/Ctrl + Enter 提交 · 先预览，确认后才入库'), h('button', { className: 'btn pri', disabled: busy || !text.trim() }, busy ? 'AI 拆分中…' : '💡 拆分并预览'))),
         h('div', { className: 'chips', style: { marginTop: 12 } },
           [['all', '全部'], ...Object.entries(IDEA_CAT).map(([k, [l, i]]) => [k, `${i} ${l}`])].map(([k, l]) => h('button', { key: k, className: cx('chip', cat === k && 'on'), onClick: () => { setCat(k); setSub('all') } }, `${l} ${k === 'all' ? ideas.length : ideas.filter((i) => i.category === k).length}`))),
         subs.length > 0 && h('div', { className: 'chips', style: { marginTop: 6 } },
@@ -372,8 +415,13 @@ window.__ModuleLoader__.load({
             h('button', { className: 'btn ghost', 'aria-label': '星标', onClick: () => patch(i.id, { starred: !i.starred }) }, i.starred ? '★' : '☆')),
           h('p', { style: { margin: '8px 0', whiteSpace: 'pre-wrap' } }, i.text),
           i.nextAction && h('p', { className: 'muted' }, `下一步：${i.nextAction}`),
+          (i.rawText || i.fullText) && (i.rawText !== i.text || i.fullText) && h('div', { style: { marginTop: 4 } },
+            h('button', { className: 'btn ghost', style: { padding: '0 4px' }, onClick: () => setOpenRaw({ ...openRaw, [i.id]: !openRaw[i.id] }) }, openRaw[i.id] ? '▾ 收起原话' : '▸ 原话'),
+            openRaw[i.id] && h('p', { className: 'muted', style: { whiteSpace: 'pre-wrap', margin: '4px 0 0 8px' } }, i.rawText || i.fullText,
+              i.fullText && i.fullText !== i.rawText && h(Fragment, null, '\n\n— 整段原话 —\n', i.fullText))),
           h('div', { className: 'row', style: { marginTop: 6 } },
             h('span', { className: 'muted grow' }, ago(i.createdAt)),
+            h('button', { className: 'btn ghost', disabled: busy || !!preview, title: '这条里写了好几件事？让 AI 拆开', onClick: () => { split(i.rawText || i.text, i.id); topRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }) } }, '✂️ AI 重新拆分'),
             i.taskId ? h('span', { className: 'badge' }, '已转任务') : h('button', { className: 'btn', onClick: () => toTask(i) }, '→ 转任务'),
             h('button', { className: 'btn ghost danger', onClick: () => { if (confirm('删除这条灵感？')) del(i.id) } }, '删除'))))
           : h('p', { className: 'muted' }, ideas.length ? '没有匹配的灵感' : '灵感库还是空的。')))

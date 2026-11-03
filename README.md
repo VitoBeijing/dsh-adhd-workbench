@@ -7,7 +7,7 @@ DeepSeek Harness（DSH）插件：一个 ADHD 友好的个人任务工作台。�
 | 页面 | 做什么 |
 | --- | --- |
 | 🎯 今日 | 用一句话录入任务：比如「明天下班前把内链方案发给老板，挺急的」，自动识别标题、类型、时长、重要、紧急和截止日期；没说到的重要程度、紧急程度、截止日期会逐项追问（可点选项，也可直接说「下周三」），确认后才入库。顶部只显示「现在只做这一步」，带专注计时和「被打断了」按钮。按重要、紧急、截止日期选出三大必做，工作日至少含 1 个成长任务；20 分钟内能做完的放进小任务；自动排出今日时间块。不想做某个必做时点「🔀 换一个」。 |
-| 💡 灵感库 | 随手记下想法，AI 归到「个人 / 工作 / 生活」大类，并按内容起小类名。支持搜索、星标、一键转任务。 |
+| 💡 灵感库 | 一次写好几件事也行：AI 按主题拆成多条，每条整理成一句话并单独分到个人 / 工作 / 生活和按内容命名的小类。先出预览，可以改文字、改分类、删掉或合并，确认后才入库；原话折叠保存，随时可查。旧的大段灵感可以点「✂️ AI 重新拆分」。每条都能一键转任务。 |
 | 🗂 工作区 | 按 Agent 从上到下纵向展示工作区，支持 DeepSeek Harness、Codex、Claude Code、OpenCode、WorkBuddy。每个工作区只列最近 2 个会话，用圆环显示上下文用了多少（中间是百分比）。 |
 | ⚙️ 设置 | 配置要展示的 Agent：启用/停用、改名称、改数据目录、调顺序、设置工作区数和上下文窗口；同一种 Agent 可以加多个。首次使用会自动检测本机已安装的 Agent。 |
 | 🧭 教练 | 判断你说的话够不够具体（对象、动作、交付物、完成标准、时间），缺什么就追问。说得太模糊时，会让你拿纸笔花 3 分钟画「现状 → 卡点 → 想要的结果」。 |
@@ -42,6 +42,7 @@ git clone https://github.com/VitoBeijing/dsh-adhd-workbench.git
 - `POST /tasks`，`PATCH /tasks/:id`，`POST /tasks/:id/split`，`POST /tasks/:id/focus`，`POST /tasks/:id/notes`
 - `POST /intake/parse`，`POST /intake/answer`：对话式录入
 - `GET|PUT /sources`，`POST /sources/reset`：Agent 来源设置
+- `POST /ideas/split`（拆分预览，不保存），`POST /ideas/batch`（批量入库，`replaceId` 替换旧条目）
 - `POST /ideas`，`POST /coach`，`GET /workspaces`，`GET /stats`，`POST /report`
 
 ## 开发

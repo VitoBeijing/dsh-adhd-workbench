@@ -5,14 +5,15 @@ import { mkdtempSync, existsSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Store } from '../lib/store.js'
-import { Ai, extractJson, ruleCoach } from '../lib/ai.js'
+import { Ai, extractJson, ruleCoach, ruleSplitIdeas } from '../lib/ai.js'
 import { createHandler, sameOrigin } from '../lib/api.js'
 import { computeStats, buildPlan, adjustCapacity } from '../lib/planner.js'
 
 let server, base, dir
 const fakeLlm = {
   async *stream({ system }) {
-    if (system.includes('录入助手')) yield { type: 'text-delta', text: '{"title":"把内链方案发给老板","track":"work","estimateMin":null,"importance":null,"urgency":3,"due":null}' }
+    if (system.includes('互不相关')) yield { type: 'text-delta', text: '{"items":[{"text":"做 SEO 周报自动生成工具","raw":"做一个 SEO 周报自动生成工具","category":"work","subcategory":"SEO","tags":["自动化"],"nextAction":"列出周报字段"},{"text":"周末带孩子去科技馆","raw":"周末带孩子去科技馆","category":"life","subcategory":"亲子"},{"text":"学 Rust 的所有权","raw":"学一下 Rust 的所有权","category":"personal","subcategory":"编程学习"}]}' }
+    else if (system.includes('录入助手')) yield { type: 'text-delta', text: '{"title":"把内链方案发给老板","track":"work","estimateMin":null,"importance":null,"urgency":3,"due":null}' }
     else if (system.includes('根据字段名')) yield { type: 'text-delta', text: '{"value":2}' }
     else if (system.includes('拆解')) yield { type: 'text-delta', text: '好的```json\n{"steps":[{"title":"打开文档写标题","estimateMin":5},{"title":"写初稿","estimateMin":20}],"reportPoint":"完成初稿"}\n```' }
     else if (system.includes('教练')) yield { type: 'text-delta', text: '{"clarity":"low","rewrite":"整理 SEO 内链方案","missing":["交付物"],"questions":["要交付什么？"],"paper":true,"paperPrompt":"画三个框","encourage":"慢慢来","task":{"title":"整理 SEO 内链方案","track":"work","estimateMin":45,"importance":3,"urgency":2}}' }
@@ -97,6 +98,39 @@ test('sources: 默认自动检测，可保存、校验、恢复', async () => {
   assert.equal(ws.sources.length, 1); assert.equal(ws.sources[0].ok, false, '目录里没有 projects 时报错而不是崩溃')
   await assert.rejects(call('PUT', '/sources', { sources: [{ type: 'x' }] }), /类型无效/)
   assert.equal((await call('POST', '/sources/reset', {})).sources.length, 5)
+})
+
+test('ideas: 一段话拆成多条预览 → 批量入库 → 重新拆分替换旧条目', async () => {
+  const raw = '1. 做一个 SEO 周报自动生成工具 2. 周末带孩子去科技馆 3. 学一下 Rust 的所有权'
+  const before = (await call('GET', '/ideas')).ideas.length
+  const pv = await call('POST', '/ideas/split', { text: raw })
+  assert.equal(pv.source, 'ai')
+  assert.deepEqual(pv.items.map((i) => i.category), ['work', 'life', 'personal'])
+  assert.equal((await call('GET', '/ideas')).ideas.length, before, '预览不保存')
+  const saved = await call('POST', '/ideas/batch', { items: pv.items, rawText: raw })
+  assert.equal(saved.ideas.length, 3)
+  assert.equal(saved.ideas[2].rawText, '学一下 Rust 的所有权'); assert.equal(saved.ideas[0].fullText, raw)
+  // 旧的大段灵感 → 重新拆分替换
+  const { idea: old } = await call('POST', '/ideas', { text: raw })
+  await call('PATCH', `/ideas/${old.id}`, { starred: true })
+  const rep = await call('POST', '/ideas/batch', { items: pv.items.slice(0, 2), rawText: raw, replaceId: old.id })
+  assert.equal(rep.replaced, old.id)
+  const all = (await call('GET', '/ideas')).ideas
+  assert.ok(!all.some((i) => i.id === old.id), '原来那条被替换掉')
+  assert.ok(rep.ideas.every((i) => i.starred && i.createdAt <= old.createdAt), '保留星标和创建时间')
+  assert.equal(all.length, before + 3 + 2)
+  await assert.rejects(call('POST', '/ideas/batch', { items: [] }), /不能为空/)
+  await assert.rejects(call('POST', '/ideas/batch', { items: [{ text: 'x' }], replaceId: 'nope' }), /不存在/)
+})
+
+test('ruleSplitIdeas: 编号、换行、连接词都能拆开', () => {
+  const a = ruleSplitIdeas('1. 做一个 SEO 周报自动生成工具 2. 周末带孩子去科技馆 3. 学一下 Rust 的所有权').items
+  assert.deepEqual(a.map((i) => i.text), ['做一个 SEO 周报自动生成工具', '周末带孩子去科技馆', '学一下 Rust 的所有权'])
+  assert.deepEqual(a.map((i) => i.category), ['work', 'life', 'personal'])
+  const b = ruleSplitIdeas('想给详情页加个对比功能，还有周末想去爬山，另外最近想读《原则》').items
+  assert.equal(b.length, 3, JSON.stringify(b.map((i) => i.text)))
+  assert.equal(ruleSplitIdeas('①买菜\n②交电费；③写周报').items.length, 3)
+  assert.equal(ruleSplitIdeas('只有一件事').items.length, 1)
 })
 
 test('rejects cross-origin writes', async () => {
