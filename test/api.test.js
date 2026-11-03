@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { Store } from '../lib/store.js'
 import { Ai, extractJson, ruleCoach } from '../lib/ai.js'
-import { createHandler } from '../lib/api.js'
+import { createHandler, sameOrigin } from '../lib/api.js'
 import { computeStats, buildPlan, adjustCapacity } from '../lib/planner.js'
 
 let server, base, dir
@@ -102,6 +102,18 @@ test('sources: 默认自动检测，可保存、校验、恢复', async () => {
 test('rejects cross-origin writes', async () => {
   const res = await fetch(base + '/tasks', { method: 'POST', headers: { 'content-type': 'application/json', origin: 'http://evil.com' }, body: '{"title":"x"}' })
   assert.equal(res.status, 403)
+})
+
+test('sameOrigin：兼容 Desktop 代理去掉 Origin/Host，仍拒绝跨站与 rebinding', () => {
+  const r = (headers) => sameOrigin({ headers })
+  assert.equal(r({}), true, 'Desktop 代理去掉了 Origin 和 Host')
+  assert.equal(r({ host: '127.0.0.1:61715' }), true, '只去掉 Origin')
+  assert.equal(r({ host: '127.0.0.1:61715', origin: 'http://127.0.0.1:61715' }), true)
+  assert.equal(r({ host: '127.0.0.1:61715', origin: 'http://127.0.0.1' }), true, 'Chrome 省略回环端口')
+  assert.equal(r({ host: '127.0.0.1:61715', origin: 'http://evil.com' }), false)
+  assert.equal(r({ host: 'evil.com', origin: 'http://evil.com' }), false, 'DNS rebinding')
+  assert.equal(r({ host: '127.0.0.1:61715', origin: 'null' }), false)
+  assert.equal(r({ host: '127.0.0.1:61715', 'sec-fetch-site': 'cross-site' }), false)
 })
 
 test('falls back to rules when model is unavailable', async () => {
