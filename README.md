@@ -1,14 +1,15 @@
 # dsh-adhd-workbench
 
-DeepSeek Harness（DSH）插件：一个 ADHD 友好的个人任务工作台。它会在每个会话里加一个「🎯 工作台」标签页，帮你每天选出三件必做的事，把大任务拆成小步，并记录你的执行习惯。
+DeepSeek Harness（DSH）插件：一个 ADHD 友好的个人任务工作台。它会在 DSH 左侧栏加一个独立的「ADHD 工作台」入口，点开后占据主区域，帮你每天选出三件必做的事，把大任务拆成小步，并记录你的执行习惯。
 
 ## 功能
 
 | 页面 | 做什么 |
 | --- | --- |
-| 🎯 今日 | 顶部只显示「现在只做这一步」，带专注计时和「被打断了」按钮。按重要、紧急、截止日期选出三大必做，工作日至少含 1 个成长任务；20 分钟内能做完的放进小任务；自动排出今日时间块。不想做某个必做时点「🔀 换一个」。 |
+| 🎯 今日 | 用一句话录入任务：比如「明天下班前把内链方案发给老板，挺急的」，自动识别标题、类型、时长、重要、紧急和截止日期；没说到的重要程度、紧急程度、截止日期会逐项追问（可点选项，也可直接说「下周三」），确认后才入库。顶部只显示「现在只做这一步」，带专注计时和「被打断了」按钮。按重要、紧急、截止日期选出三大必做，工作日至少含 1 个成长任务；20 分钟内能做完的放进小任务；自动排出今日时间块。不想做某个必做时点「🔀 换一个」。 |
 | 💡 灵感库 | 随手记下想法，AI 归到「个人 / 工作 / 生活」大类，并按内容起小类名。支持搜索、星标、一键转任务。 |
-| 🗂 工作区 | 只读展示 DSH 和 Codex 的工作区。每个工作区只列最近 2 个会话，用圆环显示上下文用了多少（中间是百分比）。 |
+| 🗂 工作区 | 按 Agent 从上到下纵向展示工作区，支持 DeepSeek Harness、Codex、Claude Code、OpenCode、WorkBuddy。每个工作区只列最近 2 个会话，用圆环显示上下文用了多少（中间是百分比）。 |
+| ⚙️ 设置 | 配置要展示的 Agent：启用/停用、改名称、改数据目录、调顺序、设置工作区数和上下文窗口；同一种 Agent 可以加多个。首次使用会自动检测本机已安装的 Agent。 |
 | 🧭 教练 | 判断你说的话够不够具体（对象、动作、交付物、完成标准、时间），缺什么就追问。说得太模糊时，会让你拿纸笔花 3 分钟画「现状 → 卡点 → 想要的结果」。 |
 | 📈 成长 | 统计速度系数（实际用时 ÷ 预估）、专注时段、专注块长度、打断次数和连续天数。之后的预估自动乘上速度系数。必做完成率 ≥80% 时每周任务量 +10%，低于 50% 时 −10%。 |
 | 📤 汇报 | 每个任务可以记汇报要点（做了什么 / 方案 / 结果 / 问题）。一键导出 Markdown 和单文件 HTML 幻灯片，方向键翻页，F 全屏，N 显示备注。 |
@@ -31,7 +32,7 @@ git clone https://github.com/VitoBeijing/dsh-adhd-workbench.git
 
 - 你的任务、灵感、计时和教练记录都存在本机 `~/.dsh/adhd-workbench/data.json`，写入是原子操作（先写临时文件再改名）。
 - 汇报文件保存在 `~/.dsh/adhd-workbench/reports/`。
-- DSH 数据（`~/.dsh/storages/`）和 Codex 数据（`~/.codex/state_5.sqlite` 及 rollout 文件）**只读**，插件不会改动。
+- 各 Agent 的数据（DSH `~/.dsh/storages/`、Codex `~/.codex/`、Claude Code `~/.claude/projects/`、OpenCode `~/.local/share/opencode/opencode.db`、WorkBuddy `~/.workbuddy/workbuddy.db`）**只读**，插件不会改动。
 
 ## HTTP API
 
@@ -39,6 +40,8 @@ git clone https://github.com/VitoBeijing/dsh-adhd-workbench.git
 
 - `GET /plan`：今日计划（必做、小任务、时间块、当前一步、统计）
 - `POST /tasks`，`PATCH /tasks/:id`，`POST /tasks/:id/split`，`POST /tasks/:id/focus`，`POST /tasks/:id/notes`
+- `POST /intake/parse`，`POST /intake/answer`：对话式录入
+- `GET|PUT /sources`，`POST /sources/reset`：Agent 来源设置
 - `POST /ideas`，`POST /coach`，`GET /workspaces`，`GET /stats`，`POST /report`
 
 ## 开发
@@ -54,7 +57,9 @@ lib/
   index.js       插件入口（Cordis apply）：解析模型、注册 HTTP 路由
   api.js         路由与输入校验
   planner.js     优先级、三大必做、时间块、学习统计、容量调整
+  agents.js      Agent 来源配置，Claude Code / OpenCode / WorkBuddy 读取
   workspaces.js  只读 DSH / Codex 工作区
+  intake.js      对话式录入：中文日期、重要、紧急、时长识别
   ai.js          模型调用（拆分 / 分类 / 教练 / 汇报）及规则兜底
   report.js      Markdown 与 HTML 幻灯片导出
   store.js       本地 JSON 存储

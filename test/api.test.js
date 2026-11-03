@@ -12,7 +12,9 @@ import { computeStats, buildPlan, adjustCapacity } from '../lib/planner.js'
 let server, base, dir
 const fakeLlm = {
   async *stream({ system }) {
-    if (system.includes('拆解')) yield { type: 'text-delta', text: '好的```json\n{"steps":[{"title":"打开文档写标题","estimateMin":5},{"title":"写初稿","estimateMin":20}],"reportPoint":"完成初稿"}\n```' }
+    if (system.includes('录入助手')) yield { type: 'text-delta', text: '{"title":"把内链方案发给老板","track":"work","estimateMin":null,"importance":null,"urgency":3,"due":null}' }
+    else if (system.includes('根据字段名')) yield { type: 'text-delta', text: '{"value":2}' }
+    else if (system.includes('拆解')) yield { type: 'text-delta', text: '好的```json\n{"steps":[{"title":"打开文档写标题","estimateMin":5},{"title":"写初稿","estimateMin":20}],"reportPoint":"完成初稿"}\n```' }
     else if (system.includes('教练')) yield { type: 'text-delta', text: '{"clarity":"low","rewrite":"整理 SEO 内链方案","missing":["交付物"],"questions":["要交付什么？"],"paper":true,"paperPrompt":"画三个框","encourage":"慢慢来","task":{"title":"整理 SEO 内链方案","track":"work","estimateMin":45,"importance":3,"urgency":2}}' }
     else if (system.includes('灵感')) yield { type: 'text-delta', text: '{"category":"work","subcategory":"产品点子","tags":["SEO"],"nextAction":"写一页说明"}' }
     else yield { type: 'text-delta', text: '{"title":"周报","subtitle":"x","slides":[{"title":"完成","bullets":["<b>A</b>"]}]}' }
@@ -73,6 +75,28 @@ test('coach returns paper prompt; rule fallback detects vague text', async () =>
   const rule = ruleCoach('感觉有点乱，不知道怎么搞')
   assert.equal(rule.clarity, 'low'); assert.equal(rule.paper, true)
   assert.equal(ruleCoach('今天下午3点前写完并提交内链修复 PR').clarity, 'high')
+})
+
+test('intake: AI 草稿保留没说的字段为 null；回答先走规则再走模型', async () => {
+  const { draft } = await call('POST', '/intake/parse', { text: '明天把内链方案发给老板，挺急的' })
+  assert.equal(draft.source, 'ai'); assert.equal(draft.urgency, 3)
+  assert.equal(draft.importance, 3, '模型没填时用规则识别「老板」')
+  assert.match(draft.due, /^\d{4}-\d{2}-\d{2}$/, '模型没填 due 时用规则识别「明天」')
+  assert.deepEqual(await call('POST', '/intake/answer', { field: 'due', text: '没有截止' }), { value: 'none', source: 'rule' })
+  assert.deepEqual(await call('POST', '/intake/answer', { field: 'importance', text: '嗯…还算得上吧' }), { value: 2, source: 'ai' })
+  await assert.rejects(call('POST', '/intake/answer', { field: 'title', text: 'x' }), /field/)
+})
+
+test('sources: 默认自动检测，可保存、校验、恢复', async () => {
+  const { sources, types } = await call('GET', '/sources')
+  assert.deepEqual(types.map((t) => t.type), ['dsh', 'codex', 'claude', 'opencode', 'workbuddy'])
+  assert.equal(sources.length, 5)
+  const saved = await call('PUT', '/sources', { sources: [{ type: 'claude', label: '我的 Claude', path: dir, enabled: true }] })
+  assert.equal(saved.sources[0].label, '我的 Claude')
+  const ws = await call('GET', '/workspaces')
+  assert.equal(ws.sources.length, 1); assert.equal(ws.sources[0].ok, false, '目录里没有 projects 时报错而不是崩溃')
+  await assert.rejects(call('PUT', '/sources', { sources: [{ type: 'x' }] }), /类型无效/)
+  assert.equal((await call('POST', '/sources/reset', {})).sources.length, 5)
 })
 
 test('rejects cross-origin writes', async () => {

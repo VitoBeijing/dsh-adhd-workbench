@@ -90,6 +90,15 @@ window.__ModuleLoader__.load({
 @keyframes awbpop{0%{transform:scale(.9);opacity:0}100%{transform:none;opacity:1}}
 .awb pre.md{white-space:pre-wrap;font-size:12px;max-height:340px;overflow:auto;padding:10px;border-radius:10px;border:1px solid var(--line)}
 .awb .ring text{font-weight:700}
+.awb .intake .chat{max-height:300px;overflow:auto}
+.awb .intake .msg{margin:4px 0;padding:7px 11px}
+.awb .confirm{margin:6px 0;padding:10px 12px;border-radius:12px;border:1px solid var(--acc);background:#6c7cff12}
+.awb .src{margin-bottom:18px}
+.awb .src>.hd{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:2px solid var(--line);margin-bottom:10px;cursor:pointer}
+.awb .wsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.awb .wsgrid .ws{margin:0}
+.awb .srcrow{display:grid;grid-template-columns:24px 120px 130px 1fr 70px 96px auto;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+@media (max-width:760px){.awb .srcrow{grid-template-columns:24px 1fr 1fr}}
 @media (prefers-reduced-motion:reduce){.awb *{animation:none!important;transition:none!important}}
 `
 
@@ -167,18 +176,87 @@ window.__ModuleLoader__.load({
           h('span', { className: 'muted' }, active ? `目标 ${plan.stats.focusMinutes} 分钟（按你的习惯设定）` : '卡住了？去「今日」点「换一个」')))
     }
 
-    function QuickAdd({ onAdd, busy }) {
-      const [f, setF] = useState({ title: '', track: 'work', estimateMin: 30, importance: 2, urgency: 2, due: '' })
-      const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
-      const submit = (e) => { e.preventDefault(); if (!f.title.trim()) return; onAdd({ ...f, estimateMin: Number(f.estimateMin), due: f.due || null }); setF({ ...f, title: '', due: '' }) }
-      return h('form', { className: 'card row', onSubmit: submit },
-        h('input', { className: 'in grow', placeholder: '新任务（动词开头，例如：写内链方案第一版）', value: f.title, onChange: set('title'), 'aria-label': '任务标题' }),
-        h('select', { className: 'in', value: f.track, onChange: set('track'), 'aria-label': '类型' }, Object.entries(TRACK).map(([k, [l, i]]) => h('option', { key: k, value: k }, `${i} ${l}`))),
-        h('select', { className: 'in', value: f.importance, onChange: set('importance'), 'aria-label': '重要' }, [[3, '很重要'], [2, '重要'], [1, '一般']].map(([v, l]) => h('option', { key: v, value: v }, l))),
-        h('select', { className: 'in', value: f.urgency, onChange: set('urgency'), 'aria-label': '紧急' }, [[3, '很急'], [2, '本周'], [1, '不急']].map(([v, l]) => h('option', { key: v, value: v }, l))),
-        h('input', { className: 'in', type: 'number', min: 5, step: 5, style: { width: 70 }, value: f.estimateMin, onChange: set('estimateMin'), 'aria-label': '预估分钟', title: '预估分钟' }),
-        h('input', { className: 'in', type: 'date', value: f.due, onChange: set('due'), 'aria-label': '截止日期' }),
-        h('button', { className: 'btn pri', disabled: busy }, '＋ 添加'))
+    // ———————— 对话式录入：说一句话，没说清的重要 / 紧急 / 截止日期逐项追问 ————————
+    const IMP = { 3: '很重要', 2: '重要', 1: '一般' }
+    const URG = { 3: '很急（今明两天）', 2: '这周内', 1: '不急' }
+    const dueLabel = (d) => (d === 'none' ? '不设截止' : d ? `📅 ${d}` : '')
+    const ASK = {
+      importance: { q: '这件事有多重要？', chips: [[3, '很重要'], [2, '重要'], [1, '一般']] },
+      urgency: { q: '有多急？', chips: [[3, '很急（今明两天）'], [2, '这周内'], [1, '不急']] },
+      due: { q: '有截止日期吗？可以直接说「下周三」「11月20日」。', chips: [[null, '今天'], [null, '明天'], [null, '本周五'], [null, '下周一'], ['none', '没有截止']] },
+    }
+    const ORDER = ['importance', 'urgency', 'due']
+
+    function IntakeChat({ onAdded, notify }) {
+      const hello = { bot: '想做什么？随口说一句就行，比如「明天下班前把内链方案发给老板，挺急的」。' }
+      const [msgs, setMsgs] = useState([hello])
+      const [draft, setDraft] = useState(null)
+      const [ask, setAsk] = useState(null) // 正在追问的字段
+      const [text, setText] = useState('')
+      const [busy, setBusy] = useState(false)
+      const endRef = useRef(null)
+      useEffect(() => { endRef.current?.scrollIntoView({ block: 'nearest' }) }, [msgs, ask])
+      const say = (m) => setMsgs((x) => [...x, m])
+      const nextField = (d) => ORDER.find((f) => d[f] == null) ?? null
+      const advance = (d) => { setDraft(d); const f = nextField(d); setAsk(f); if (f) say({ bot: ASK[f].q, field: f }) }
+      const reset = () => { setMsgs([hello]); setDraft(null); setAsk(null); setText('') }
+
+      const submit = async (e) => {
+        e?.preventDefault(); const t = text.trim(); if (!t || busy) return
+        setText(''); say({ me: t }); setBusy(true)
+        try {
+          if (!draft) {
+            const { draft: d } = await api('POST', '/intake/parse', { text: t })
+            const known = [d.importance && IMP[d.importance], d.urgency && URG[d.urgency], d.due && dueLabel(d.due)].filter(Boolean)
+            say({ bot: `好，记下「${d.title}」（${TRACK[d.track][1]} ${TRACK[d.track][0]}${d.estimateMin ? `，约 ${d.estimateMin} 分钟` : ''}）。${known.length ? `听出来：${known.join('、')}。` : ''}` })
+            advance(d)
+          } else if (ask) {
+            const r = await api('POST', '/intake/answer', { field: ask, text: t })
+            if (r.value == null) say({ bot: '没太听懂，换个说法，或者点下面的选项？', field: ask })
+            else advance({ ...draft, [ask]: r.value })
+          } else {
+            // 确认阶段继续说话：当作改标题
+            setDraft({ ...draft, title: t.slice(0, 80) }); say({ bot: `标题改成「${t.slice(0, 80)}」。` })
+          }
+        } catch (err) { notify(err.message, true) } finally { setBusy(false) }
+      }
+      const pickChip = async (field, value, label) => {
+        if (busy) return
+        say({ me: label })
+        if (field !== 'due' || value === 'none') return advance({ ...draft, [field]: value })
+        setBusy(true)
+        try { const r = await api('POST', '/intake/answer', { field, text: label }); advance({ ...draft, [field]: r.value ?? 'none' }) } catch (err) { notify(err.message, true) } finally { setBusy(false) }
+      }
+      const confirm = async () => {
+        setBusy(true)
+        try {
+          await api('POST', '/tasks', { title: draft.title, track: draft.track, importance: draft.importance, urgency: draft.urgency, estimateMin: draft.estimateMin ?? 30, due: draft.due === 'none' ? null : draft.due })
+          notify(`✅ 已加入：${draft.title}`); reset(); onAdded()
+        } catch (err) { notify(err.message, true) } finally { setBusy(false) }
+      }
+      const last = msgs[msgs.length - 1]
+      const ready = draft && !ask
+      return h('div', { className: 'card intake' },
+        h('div', { className: 'chat' }, msgs.map((m, i) => h('div', { key: i, className: cx('msg', m.me ? 'me' : 'coach') }, m.me ?? m.bot)),
+          ask && last?.field === ask && h('div', { className: 'chips', style: { margin: '2px 0 6px' } }, ASK[ask].chips.map(([v, l]) => h('button', { key: l, className: 'chip', disabled: busy, onClick: () => pickChip(ask, v ?? l, l) }, l))),
+          ready && h('div', { className: 'confirm' },
+            h('b', null, draft.title),
+            h('div', { className: 'row', style: { marginTop: 6 } },
+              h('span', { className: 'chips' }, Object.entries(TRACK).map(([k, [l, ic]]) => h('button', { key: k, className: cx('chip', draft.track === k && 'on'), onClick: () => setDraft({ ...draft, track: k }) }, `${ic} ${l}`))),
+              h('label', { className: 'muted' }, '预计 ', h('input', { className: 'in', type: 'number', min: 5, step: 5, style: { width: 64, padding: '2px 6px' }, value: draft.estimateMin ?? 30, onChange: (e) => setDraft({ ...draft, estimateMin: Number(e.target.value) }) }), ' 分钟')),
+            h('div', { className: 'row', style: { marginTop: 6 } },
+              ORDER.map((f) => h('button', { key: f, className: 'badge', style: { border: 0, cursor: 'pointer' }, title: '点击重新回答', onClick: () => { setAsk(f); say({ bot: ASK[f].q, field: f }) } },
+                f === 'importance' ? `重要：${IMP[draft.importance]}` : f === 'urgency' ? `紧急：${URG[draft.urgency]}` : dueLabel(draft.due), ' ✎'))),
+            h('div', { className: 'row', style: { marginTop: 8 } },
+              h('button', { className: 'btn pri', disabled: busy, onClick: confirm }, '✓ 加入任务'),
+              h('button', { className: 'btn ghost', onClick: reset }, '重来'),
+              h('span', { className: 'muted' }, '想改标题就直接再说一句'))),
+          busy && h('p', { className: 'muted' }, '想一下…'),
+          h('div', { ref: endRef })),
+        h('form', { className: 'row', style: { marginTop: 6 }, onSubmit: submit },
+          h('input', { className: 'in grow', value: text, 'aria-label': '用一句话说任务', placeholder: !draft ? '我要…' : ask ? '直接回答，或点上面的选项' : '改标题，或点「加入任务」', onChange: (e) => setText(e.target.value) }),
+          h('button', { className: 'btn pri', disabled: busy || !text.trim() }, '发送'),
+          draft && h('button', { type: 'button', className: 'btn ghost', onClick: reset }, '清空')))
     }
 
     function TaskCard({ t, index, act, isCurrent, dim, onSwap }) {
@@ -234,7 +312,7 @@ window.__ModuleLoader__.load({
       if (!plan) return h('p', { className: 'muted' }, '加载中…')
       const swap = (t) => { const alt = plan.backlog[0] ?? plan.small[0]; if (!alt) return props.notify('任务池里没有可替换的任务', true); act.patch(t.id, { snoozeDate: true }).then(() => act.patch(alt.id, { pinnedDate: true }, `已换成「${alt.title}」，原任务明天再排`)) }
       return h(Fragment, null,
-        h(QuickAdd, { onAdd: act.add, busy: act.busy === 'add' }),
+        h(IntakeChat, { onAdded: props.reload, notify: props.notify }),
         plan.capacityChange && h('div', { className: 'ins good', style: { marginTop: 8 } }, '📊 ', plan.capacityChange),
         h('h4', null, `三大必做（按优先级 + 截止日期自动选出${plan.workday ? '，含 1 个成长任务' : '，休息日不排工作'}）`),
         plan.must.length ? h('div', { className: 'must' }, plan.must.map((t, i) => h(TaskCard, { key: t.id, t, index: i, act, isCurrent: plan.next?.taskId === t.id, dim: plan.next && plan.next.taskId !== t.id && !plan.active, onSwap: () => swap(t) })))
@@ -302,25 +380,68 @@ window.__ModuleLoader__.load({
     }
 
     // ———————————————— 工作区看板 ————————————————
-    function Workspaces({ notify }) {
+    function Workspaces({ notify, goSettings }) {
       const [data, setData] = useState(null)
       const load = () => api('GET', '/workspaces').then(setData).catch((e) => notify(e.message, true))
       useEffect(() => { load(); const t = setInterval(load, 30000); return () => clearInterval(t) }, [])
+      const [closed, setClosed] = useState({})
       if (!data) return h('p', { className: 'muted' }, '读取工作区…')
-      const col = (title, src, kind) => h('div', null,
-        h('div', { className: 'row', style: { marginBottom: 8 } }, h('h3', { className: 'grow' }, title), h('span', { className: 'muted' }, src.ok ? `${src.workspaces.length} 个工作区` : '')),
-        !src.ok ? h('p', { className: 'muted' }, src.error) : src.workspaces.map((w) => h('div', { key: w.id, className: 'ws' },
+      const section = (src) => h('section', { key: src.id, className: 'src' },
+        h('div', { className: 'hd', onClick: () => setClosed({ ...closed, [src.id]: !closed[src.id] }) },
+          h('span', null, closed[src.id] ? '▸' : '▾'), h('h3', null, src.label),
+          h('span', { className: 'muted grow', title: src.path }, src.ok ? `${src.workspaces.length} 个工作区` : '读取失败'),
+          h('span', { className: 'muted' }, src.path)),
+        closed[src.id] ? null : !src.ok ? h('p', { className: 'muted' }, src.error) : !src.workspaces.length ? h('p', { className: 'muted' }, '暂无会话') : h('div', { className: 'wsgrid' }, src.workspaces.map((w) => h('div', { key: w.id, className: 'ws' },
           h('div', { className: 'row' }, h('b', { className: 'grow', title: w.path }, `📁 ${w.title}`), h('span', { className: 'muted' }, `共 ${w.total} 个会话，显示最近 2 个`)),
           w.sessions.length ? w.sessions.map((s) => h('div', { key: s.id, className: 'sess' },
             h(Ring, { pct: s.contextPct }),
             h('div', { className: 'grow', style: { minWidth: 0 } },
               h('div', { className: 'row', style: { gap: 6 } }, h('span', { className: cx('dot', s.status) }), h('b', { style: { overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' } }, s.title)),
-              h('div', { className: 'muted' }, `${s.status === 'running' ? '运行中' : '空闲'} · ${ago(s.lastActiveAt)}${s.model ? ` · ${s.model}` : ''}${s.branch ? ` · ⎇ ${s.branch}` : ''}`),
-              kind === 'dsh' && s.todos.total > 0 && h('div', { className: 'muted' }, `任务 ${s.todos.done}/${s.todos.total}${s.todos.current ? ` · 进行中：${s.todos.current}` : ''}`),
-              h('div', { className: 'muted' }, s.contextWindow ? `上下文 ${Math.round((s.contextUsed ?? 0) / 1000)}k / ${Math.round(s.contextWindow / 1000)}k tokens${s.contextPct >= 80 ? ' · ⚠️ 快满了，考虑压缩或新开会话' : ''}` : '暂无上下文数据')))) : h('p', { className: 'muted' }, '暂无会话'))))
+              h('div', { className: 'muted' }, `${{ running: '运行中', error: '出错' }[s.status] ?? '空闲'} · ${ago(s.lastActiveAt)}${s.model ? ` · ${s.model}` : ''}${s.branch ? ` · ⎇ ${s.branch}` : ''}`),
+              s.todos?.total > 0 && h('div', { className: 'muted' }, `任务 ${s.todos.done}/${s.todos.total}${s.todos.current ? ` · 进行中：${s.todos.current}` : ''}`),
+              h('div', { className: 'muted' }, s.contextWindow ? `上下文 ${Math.round((s.contextUsed ?? 0) / 1000)}k / ${Math.round(s.contextWindow / 1000)}k tokens${s.contextPct >= 80 ? ' · ⚠️ 快满了，考虑压缩或新开会话' : ''}` : '暂无上下文数据')))) : h('p', { className: 'muted' }, '暂无会话')))))
       return h(Fragment, null,
-        h('div', { className: 'row', style: { marginBottom: 10 } }, h('span', { className: 'muted grow' }, `每 30 秒刷新 · 上次 ${new Date(data.at).toLocaleTimeString()}`), h('button', { className: 'btn', onClick: load }, '↻ 刷新')),
-        h('div', { className: 'grid2' }, col('DeepSeek Harness', data.dsh, 'dsh'), col('Codex', data.codex, 'codex')))
+        h('div', { className: 'row', style: { marginBottom: 10 } }, h('span', { className: 'muted grow' }, `每 30 秒刷新 · 上次 ${new Date(data.at).toLocaleTimeString()} · 每个工作区显示最近 2 个会话`),
+          h('button', { className: 'btn', onClick: () => goSettings?.() }, '⚙️ 配置 Agent'), h('button', { className: 'btn', onClick: load }, '↻ 刷新')),
+        data.sources.length ? data.sources.map(section) : h('p', { className: 'muted' }, '还没有启用任何 Agent，去「设置」里添加。'))
+    }
+
+    // ———————————————— 设置：Agent 来源 ————————————————
+    function Settings({ notify }) {
+      const [list, setList] = useState(null)
+      const [types, setTypes] = useState([])
+      const [dirty, setDirty] = useState(false)
+      const load = () => api('GET', '/sources').then((r) => { setList(r.sources); setTypes(r.types); setDirty(false) }).catch((e) => notify(e.message, true))
+      useEffect(() => { load() }, [])
+      if (!list) return h('p', { className: 'muted' }, '加载中…')
+      const typeOf = (t) => types.find((x) => x.type === t)
+      const upd = (i, patch) => { setList(list.map((s, k) => (k === i ? { ...s, ...patch } : s))); setDirty(true) }
+      const move = (i, d) => { const j = i + d; if (j < 0 || j >= list.length) return; const n = [...list]; [n[i], n[j]] = [n[j], n[i]]; setList(n); setDirty(true) }
+      const del = (i) => { setList(list.filter((_s, k) => k !== i)); setDirty(true) }
+      const add = () => { const t = types[0]; setList([...list, { id: `${t.type}-${Date.now().toString(36)}`, type: t.type, label: t.label, path: t.defaultPath, enabled: true, maxWorkspaces: 6 }]); setDirty(true) }
+      const save = () => api('PUT', '/sources', { sources: list }).then((r) => { setList(r.sources); setDirty(false); notify('已保存，工作区看板会按这个顺序显示') }).catch((e) => notify(e.message, true))
+      const reset = () => { if (confirm('恢复成自动检测的默认配置？')) api('POST', '/sources/reset', {}).then(() => { load(); notify('已恢复默认') }).catch((e) => notify(e.message, true)) }
+      return h(Fragment, null,
+        h('h4', { style: { marginTop: 0 } }, 'Agent 来源（工作区看板按这里的顺序从上到下显示）'),
+        h('div', { className: 'card' },
+          h('div', { className: 'srcrow muted', style: { borderTop: 0 } }, h('span', null, '启用'), h('span', null, '名称'), h('span', null, '类型'), h('span', null, '数据目录'), h('span', null, '工作区数'), h('span', { title: '留空则自动判断' }, '上下文窗口'), h('span')),
+          list.map((s, i) => h('div', { key: s.id, className: 'srcrow' },
+            h('input', { type: 'checkbox', checked: s.enabled, 'aria-label': '启用', onChange: (e) => upd(i, { enabled: e.target.checked }) }),
+            h('input', { className: 'in', value: s.label, 'aria-label': '名称', onChange: (e) => upd(i, { label: e.target.value }) }),
+            h('select', { className: 'in', value: s.type, 'aria-label': '类型', onChange: (e) => { const t = typeOf(e.target.value); upd(i, { type: t.type, label: s.label === typeOf(s.type)?.label ? t.label : s.label, path: t.defaultPath }) } }, types.map((t) => h('option', { key: t.type, value: t.type }, t.label))),
+            h('input', { className: 'in', value: s.path, 'aria-label': '数据目录', placeholder: typeOf(s.type)?.defaultPath, onChange: (e) => upd(i, { path: e.target.value }) }),
+            h('input', { className: 'in', type: 'number', min: 1, max: 20, value: s.maxWorkspaces ?? 6, 'aria-label': '最多显示几个工作区', onChange: (e) => upd(i, { maxWorkspaces: Number(e.target.value) }) }),
+            h('input', { className: 'in', type: 'number', min: 1000, step: 1000, placeholder: '自动', value: s.contextWindow ?? '', 'aria-label': '上下文窗口 tokens', onChange: (e) => upd(i, { contextWindow: e.target.value ? Number(e.target.value) : undefined }) }),
+            h('span', { className: 'row', style: { gap: 2, flexWrap: 'nowrap' } },
+              h('button', { className: 'btn ghost', 'aria-label': '上移', onClick: () => move(i, -1) }, '↑'),
+              h('button', { className: 'btn ghost', 'aria-label': '下移', onClick: () => move(i, 1) }, '↓'),
+              h('button', { className: 'btn ghost danger', 'aria-label': '删除', onClick: () => del(i) }, '×')))),
+          h('div', { className: 'row', style: { marginTop: 10 } },
+            h('button', { className: 'btn', onClick: add }, '＋ 添加 Agent'),
+            h('span', { className: 'grow' }),
+            h('button', { className: 'btn ghost', onClick: reset }, '恢复默认'),
+            h('button', { className: 'btn pri', disabled: !dirty, onClick: save }, dirty ? '保存' : '已保存'))),
+        h('p', { className: 'muted', style: { marginTop: 8 } }, '支持 DeepSeek Harness、Codex、Claude Code、OpenCode、WorkBuddy。同一种 Agent 可以加多个（比如两个 Codex 数据目录）。插件只读这些目录，不会改动里面的数据。'))
     }
 
     // ———————————————— 教练 ————————————————
@@ -434,8 +555,8 @@ window.__ModuleLoader__.load({
       const reload = useCallback(() => api('GET', '/plan').then(setPlan).catch((e) => notify(e.message, true)), [notify])
       useEffect(() => { reload(); api('GET', '/status').then(setStatus).catch(() => {}) }, [reload])
       useEffect(() => { const t = setInterval(reload, 60000); return () => clearInterval(t) }, [reload])
-      const shared = { plan, reload, notify, status }
-      const tabs = [['today', '🎯 今日'], ['ideas', '💡 灵感库'], ['ws', '🗂 工作区'], ['coach', '🧭 教练'], ['growth', '📈 成长'], ['report', '📤 汇报']]
+      const shared = { plan, reload, notify, status, goSettings: () => setTab('settings') }
+      const tabs = [['today', '🎯 今日'], ['ideas', '💡 灵感库'], ['ws', '🗂 工作区'], ['coach', '🧭 教练'], ['growth', '📈 成长'], ['report', '📤 汇报'], ['settings', '⚙️ 设置']]
       return h('div', { className: 'awb' }, h('style', null, css),
         toast && h('div', { className: cx('toast', toast.err && 'err'), role: 'status' }, toast.text),
         h('div', { className: 'row' }, h('h3', { className: 'grow' }, 'ADHD 工作台'),
@@ -448,13 +569,28 @@ window.__ModuleLoader__.load({
         tab === 'ws' && h(Workspaces, shared),
         tab === 'coach' && h(Coach, shared),
         tab === 'growth' && h(Growth, shared),
-        tab === 'report' && h(Report, shared))
+        tab === 'report' && h(Report, shared),
+        tab === 'settings' && h(Settings, shared))
     }
 
+    // 左侧栏图标（宿主传入 size）
+    function SidebarIcon({ size = 16 }) {
+      return h('svg', { width: size, height: size, viewBox: '0 0 16 16', fill: 'none', stroke: 'currentColor', strokeWidth: 1.2, strokeLinecap: 'round', 'aria-hidden': true, focusable: false },
+        h('circle', { cx: 8, cy: 8, r: 6.5 }), h('circle', { cx: 8, cy: 8, r: 3.8 }), h('circle', { cx: 8, cy: 8, r: 1.1, fill: 'currentColor' }))
+    }
+    const PanelPage = () => h('div', { style: { height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column' } }, h('div', { style: { flex: 1, minHeight: 0, maxWidth: 1180, width: '100%', margin: '0 auto' } }, h(App)))
+    const PANEL_ID = 'adhd-workbench'
+
+    // 左侧栏单独入口：点开后在主区域显示工作台（与插件市场、IM 插件的做法一致）
     function apply(ctx) {
-      ctx.slots.inject('conversation.view', () => ctx.slots.register({
-        name: 'conversation.view', id: 'adhd-workbench', order: 5, label: () => '🎯 工作台',
-      }, () => h(App)))
+      if (typeof ctx.inject !== 'function') return
+      ctx.inject(['layout'], (pageCtx) => pageCtx.slots.inject('main', () => {
+        const offMain = pageCtx.slots.register({ name: 'main', key: PANEL_ID }, PanelPage)
+        const offRow = pageCtx.slots.inject('sidebar.panellist', () => pageCtx.slots.register({
+          name: 'sidebar.panellist', id: PANEL_ID, order: 5, label: () => 'ADHD 工作台',
+        }, SidebarIcon))
+        return () => { offRow?.(); offMain?.() }
+      }))
     }
     return { inject: ['slots'], apply }
   },
