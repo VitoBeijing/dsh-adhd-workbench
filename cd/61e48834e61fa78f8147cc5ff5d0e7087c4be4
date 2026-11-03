@@ -1,0 +1,36 @@
+lib/ai.js
+  s_ad4c8a4643dfaa::t_2c35b36496e756 119-126
+  s_ad4c8a4643dfaa::t_64f83505ee5191 201-211
+  s_ad4c8a4643dfaa::t_944b9455f64c10 25-32
+README.md
+  s_ad4c8a4643dfaa::t_b8f895790d0880 10,45
+lib/api.js
+  s_ad4c8a4643dfaa::t_ac622639418cbb 75-87
+  s_ad4c8a4643dfaa::t_cf827098f6c71b 214-228,237-243
+  s_ad4c8a4643dfaa::t_3eea8aa9cbbb7d 229-236
+test/api.test.js
+  s_ad4c8a4643dfaa::t_46e547fb9706c9 103-135
+  s_ad4c8a4643dfaa::t_8b856440ab7e29 8
+  s_ad4c8a4643dfaa::t_a8e3939be361ea 15-16
+client/index.js
+  s_ad4c8a4643dfaa::t_1e3a245a6a5a37 345,382,424
+  s_ad4c8a4643dfaa::t_3331521d86dc43 343-344,346-347,349-369
+  s_ad4c8a4643dfaa::t_4ca565b756f72a 418-421
+  s_ad4c8a4643dfaa::t_96485f0a41b300 383-404
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "cd61e48834e61fa78f8147cc5ff5d0e7087c4be4",
+  "prompts": {},
+  "sessions": {
+    "s_ad4c8a4643dfaa": {
+      "agent_id": {
+        "tool": "deepseekharness",
+        "id": "session-df26e8c7-5718-4e87-81df-67640ccc8a54",
+        "model": "kr-claude-opus-5.5"
+      },
+      "human_author": "VitoBeijing <43870892+VitoBeijing@users.noreply.github.com>"
+    }
+  }
+}
