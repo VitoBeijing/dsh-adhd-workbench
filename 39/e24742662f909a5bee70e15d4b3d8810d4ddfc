@@ -1,0 +1,19 @@
+client/index.js
+  s_ad4c8a4643dfaa::t_a9250ff22b9aee 21-57,229-233,301-303,348,373-377,380-381,400-401,472,496,498-500,502,509,529,536-538,547-548,601-607,639
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "39e24742662f909a5bee70e15d4b3d8810d4ddfc",
+  "prompts": {},
+  "sessions": {
+    "s_ad4c8a4643dfaa": {
+      "agent_id": {
+        "tool": "deepseekharness",
+        "id": "session-df26e8c7-5718-4e87-81df-67640ccc8a54",
+        "model": "kr-claude-opus-5.5"
+      },
+      "human_author": "VitoBeijing <43870892+VitoBeijing@users.noreply.github.com>"
+    }
+  }
+}
