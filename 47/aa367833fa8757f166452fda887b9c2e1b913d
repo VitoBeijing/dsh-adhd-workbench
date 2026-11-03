@@ -1,0 +1,29 @@
+client/index.js
+  s_ad4c8a4643dfaa::t_b0858c830fc86e 21-25,231-274,372,411-412,449-450,489-491,896-1032,1043,1051,1053
+  s_ad4c8a4643dfaa::t_07c592707c4031 275
+README.md
+  s_ad4c8a4643dfaa::t_87666c11ceb570 10,43
+lib/planner.js
+  s_ad4c8a4643dfaa::t_a93a1c27bb3abc 103-107,119-121,126,134,198-238
+lib/api.js
+  s_ad4c8a4643dfaa::t_6d9e75a576a41c 3
+  s_ad4c8a4643dfaa::t_a93a1c27bb3abc 70-73,117-125
+test/calendar.test.js
+  s_ad4c8a4643dfaa::t_6be6324ae1f677 1-95
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "47aa367833fa8757f166452fda887b9c2e1b913d",
+  "prompts": {},
+  "sessions": {
+    "s_ad4c8a4643dfaa": {
+      "agent_id": {
+        "tool": "deepseekharness",
+        "id": "session-df26e8c7-5718-4e87-81df-67640ccc8a54",
+        "model": "kr-claude-opus-5.5"
+      },
+      "human_author": "VitoBeijing <43870892+VitoBeijing@users.noreply.github.com>"
+    }
+  }
+}
