@@ -62,80 +62,168 @@ window.__ModuleLoader__.load({
     }
 
     const css = `
-.awb{--line:var(--dsw-alias-border-l1,color-mix(in srgb,currentColor 13%,transparent));--soft:var(--dsw-alias-bg-layer-1,color-mix(in srgb,currentColor 4%,transparent));--muted:var(--dsw-alias-label-secondary,color-mix(in srgb,currentColor 60%,transparent));--acc:#6c7cff;--acc2:#ff6fb5;--ok:#2fb67c;--warn:#e8a33d;--bad:#e5534b;
-  height:100%;overflow:auto;padding:14px 16px 40px;font-size:13.5px;line-height:1.55;color:inherit;box-sizing:border-box}
-.awb *{box-sizing:border-box}.awb h3,.awb h4,.awb p{margin:0}
-.awb h3{font-size:15px;font-weight:650}.awb h4{font-size:13px;font-weight:600;color:var(--muted);margin:14px 0 8px}
-.awb .muted{color:var(--muted);font-size:12px}
+.awb{--line:var(--dsw-alias-border-l1,color-mix(in srgb,currentColor 12%,transparent));--hair:color-mix(in srgb,currentColor 9%,transparent);
+  --soft:var(--dsw-alias-bg-layer-1,color-mix(in srgb,currentColor 4%,transparent));--fill:color-mix(in srgb,currentColor 6%,transparent);
+  --muted:var(--dsw-alias-label-secondary,color-mix(in srgb,currentColor 58%,transparent));--faint:color-mix(in srgb,currentColor 38%,transparent);
+  --surface:var(--dsw-alias-bg-layer-1,Canvas);
+  --acc:#0a84ff;--acc2:#5e5ce6;--ok:#30b158;--warn:#ff9f0a;--bad:#ff453a;--growth:#30b158;--life:#ff9f0a;
+  height:100%;overflow:auto;padding:16px 20px 0;font-size:14px;line-height:1.5;color:inherit;box-sizing:border-box;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue",system-ui,sans-serif;-webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column;container-type:inline-size}
+.awb>*{flex-shrink:0}
+.awb *{box-sizing:border-box}.awb h1,.awb h2,.awb h3,.awb h4,.awb p{margin:0}
+.awb h3{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.awb h4{font-size:12px;font-weight:600;color:var(--muted);margin:22px 4px 8px;letter-spacing:.02em}
+.awb .muted{color:var(--muted);font-size:12.5px}
 .awb button,.awb input,.awb select,.awb textarea{font:inherit;color:inherit}
-.awb .btn{appearance:none;border:1px solid var(--line);background:transparent;border-radius:9px;padding:4px 10px;cursor:pointer;font-size:12px;white-space:nowrap}
-.awb .btn:hover:not(:disabled){background:color-mix(in srgb,currentColor 8%,transparent)}
-.awb .btn:disabled{opacity:.45;cursor:not-allowed}
-.awb .btn.pri{background:linear-gradient(135deg,var(--acc),var(--acc2));border-color:transparent;color:#fff;font-weight:600}
-.awb .btn.ghost{border-color:transparent}.awb .btn.danger{color:var(--bad)}
-.awb .in{border:1px solid var(--line);background:transparent;border-radius:9px;padding:6px 10px;min-width:0}
+.awb .btn{appearance:none;border:0;background:var(--fill);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:12.5px;font-weight:500;white-space:nowrap;transition:background .15s,transform .1s}
+.awb .btn:hover:not(:disabled){background:color-mix(in srgb,currentColor 11%,transparent)}
+.awb .btn:active:not(:disabled){transform:scale(.97)}
+.awb .btn:disabled{opacity:.4;cursor:default}
+.awb .btn.pri{background:var(--acc);color:#fff;font-weight:600}
+.awb .btn.pri:hover:not(:disabled){background:color-mix(in srgb,var(--acc) 88%,#000)}
+.awb .btn.ghost{background:transparent}.awb .btn.ghost:hover:not(:disabled){background:var(--fill)}
+.awb .btn.danger{color:var(--bad)}
+.awb .link{appearance:none;border:0;background:none;padding:2px 0;color:var(--acc);cursor:pointer;font-size:13px;font-weight:500}
+.awb .link.danger{color:var(--bad)}.awb .link.plain{color:var(--muted)}
+.awb .link:disabled{opacity:.4;cursor:default}
+.awb .in{border:0;background:var(--fill);border-radius:10px;padding:7px 11px;min-width:0;outline:none;transition:box-shadow .15s}
+.awb .in:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 35%,transparent)}
 .awb textarea.in{width:100%;resize:vertical}
-.awb .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.awb .grow{flex:1}
-.awb .card{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--soft)}
-.awb .tabs{display:flex;gap:4px;margin:10px 0 14px;border-bottom:1px solid var(--line);overflow-x:auto}
-.awb .tab{border:0;background:none;padding:7px 10px;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);font-weight:550}
-.awb .tab.on{color:inherit;border-bottom-color:var(--acc)}
-.awb .badge{display:inline-flex;align-items:center;gap:3px;border-radius:6px;padding:0 6px;font-size:11px;background:color-mix(in srgb,currentColor 8%,transparent)}
-.awb .badge.work{background:#6c7cff22}.awb .badge.growth{background:#2fb67c22}.awb .badge.life{background:#e8a33d22}
-.awb .focus{border-radius:16px;padding:14px;background:linear-gradient(135deg,#6c7cff1f,#ff6fb51a);border:1px solid #6c7cff55}
-.awb .focus .big{font-size:18px;font-weight:700;margin:4px 0}
-.awb .clock{font-variant-numeric:tabular-nums;font-size:26px;font-weight:700;letter-spacing:1px}
+.awb .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.awb .grow{flex:1;min-width:0}
+.awb .card{border-radius:14px;padding:14px;background:var(--soft);border:1px solid var(--hair)}
+.awb .topbar{display:flex;gap:10px;align-items:center;margin-bottom:6px}
+.awb .tabs{display:inline-flex;gap:2px;padding:2px;border-radius:10px;background:var(--fill);overflow-x:auto;max-width:100%;scrollbar-width:none}
+.awb .tab{border:0;background:none;padding:5px 12px;border-radius:8px;cursor:pointer;color:var(--muted);font-weight:500;font-size:13px;white-space:nowrap;transition:background .2s,color .2s}
+.awb .tab.on{color:inherit;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.04)}
+.awb .badge{display:inline-flex;align-items:center;gap:3px;border-radius:6px;padding:1px 7px;font-size:11.5px;font-weight:500;background:var(--fill)}
+.awb .badge.work{color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent)}
+.awb .badge.growth{color:var(--growth);background:color-mix(in srgb,var(--growth) 12%,transparent)}
+.awb .badge.life{color:var(--life);background:color-mix(in srgb,var(--life) 12%,transparent)}
+.awb .pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:500;background:var(--fill)}
+.awb .pill.live{color:var(--acc);background:color-mix(in srgb,var(--acc) 12%,transparent)}
+/* —— 大标题 —— */
+.awb .large{margin:14px 4px 14px}
+.awb .large h1{font-size:30px;font-weight:700;letter-spacing:-.025em;line-height:1.15}
+.awb .large p{color:var(--muted);font-size:13.5px;margin-top:3px}
+/* —— 现在只做这一步 —— */
+.awb .hero{border-radius:20px;padding:20px 22px;background:linear-gradient(160deg,color-mix(in srgb,var(--acc) 13%,transparent),color-mix(in srgb,var(--acc2) 7%,transparent));border:1px solid color-mix(in srgb,var(--acc) 16%,transparent)}
+.awb .hero .eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.06em;color:var(--acc)}
+.awb .hero .title{font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.25;margin:6px 0 4px}
+.awb .hero .sub{color:var(--muted);font-size:13px}
+.awb .hero .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;align-items:center}
+.awb .hero .btn{padding:8px 16px;font-size:13.5px}
+.awb .clock{font-variant-numeric:tabular-nums;font-size:40px;font-weight:300;letter-spacing:-.02em;line-height:1}
 .awb .clock.over{color:var(--warn)}
+/* —— 今日布局：主列 + 窄时间线 —— */
+.awb .today{flex:1 0 auto;display:flex;flex-direction:column}
+.awb .split{display:grid;grid-template-columns:minmax(0,1fr);gap:0 28px}
+@container (min-width:860px){.awb .split{grid-template-columns:minmax(0,1fr) 260px}.awb .split>aside{position:sticky;top:12px;align-self:start}}
+/* 分组列表（类似 iOS 设置里的 inset grouped） */
+.awb .group{border-radius:14px;background:var(--soft);border:1px solid var(--hair);overflow:hidden}
+.awb .rowi{display:flex;gap:12px;align-items:center;padding:11px 14px;position:relative;cursor:default}
+.awb .group>*+*{border-top:1px solid var(--hair)}
+.awb .rowi.click{cursor:pointer}.awb .rowi.click:hover{background:var(--fill)}
+.awb .rowi .t{font-size:14.5px;font-weight:500;line-height:1.35;overflow:hidden;text-overflow:ellipsis}
+.awb .rowi .m{color:var(--muted);font-size:12px;margin-top:2px}
+.awb .rowi.cur{background:color-mix(in srgb,var(--acc) 6%,transparent)}
+.awb .rowi.cur .t{font-weight:600}
+.awb .chev{color:var(--faint);font-size:14px;transition:transform .2s;flex:none}.awb .chev.open{transform:rotate(90deg)}
+.awb .lead{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:600;flex:none;background:var(--fill);color:var(--muted)}
+.awb .rowi.cur .lead{background:var(--acc);color:#fff}
+.awb .ck{appearance:none;width:22px;height:22px;border-radius:50%;border:1.5px solid var(--faint);background:none;flex:none;cursor:pointer;display:grid;place-items:center;padding:0;color:#fff;font-size:12px;transition:background .15s,border-color .15s}
+.awb .ck:hover{border-color:var(--acc)}.awb .ck.on{background:var(--ok);border-color:var(--ok)}
+.awb .prog{height:3px;border-radius:3px;background:var(--fill);overflow:hidden;margin-top:7px}
+.awb .prog>i{display:block;height:100%;background:var(--acc);border-radius:3px;transition:width .4s}
+.awb .detail{padding:2px 14px 12px 50px;background:color-mix(in srgb,currentColor 1.5%,transparent)}
+.awb .detail .sl{list-style:none;margin:0;padding:0}
+.awb .detail .sl li{display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--hair);font-size:13.5px}
+.awb .detail .sl li .ck{width:18px;height:18px;font-size:10px}
+.awb .detail .sl li.done span.grow{color:var(--muted);text-decoration:line-through}
+.awb .detail .sl li.next span.grow{font-weight:600}
+.awb .detail .notes{margin-top:10px;display:grid;gap:4px}
+.awb .detail .foot{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.awb .disclose{appearance:none;border:0;background:none;padding:0;color:var(--muted);font:inherit;font-size:12px;font-weight:600;cursor:pointer;letter-spacing:.02em}
+.awb .empty{padding:18px 14px;color:var(--muted);font-size:13px}
+/* —— 时间线 —— */
+.awb .tl{list-style:none;margin:0;padding:6px 0}
+.awb .tl li{display:grid;grid-template-columns:42px 14px minmax(0,1fr);gap:0 8px;align-items:start;padding:7px 14px 7px 12px;position:relative}
+.awb .tl .tm{font-variant-numeric:tabular-nums;font-size:12px;color:var(--muted);padding-top:1px;text-align:right}
+.awb .tl .rail{position:relative;height:100%;min-height:20px}
+.awb .tl .rail:before{content:"";position:absolute;left:6px;top:-8px;bottom:-8px;width:1.5px;background:var(--hair)}
+.awb .tl li:first-child .rail:before{top:7px}.awb .tl li:last-child .rail:before{bottom:auto;height:15px}
+.awb .tl .rail i{position:absolute;left:2px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--faint)}
+.awb .tl li.focus .rail i{border-color:var(--acc)}.awb .tl li.growth .rail i{border-color:var(--growth)}
+.awb .tl li.warmup .rail i,.awb .tl li.batch .rail i{border-color:var(--life)}
+.awb .tl li.now .rail i{background:var(--acc);border-color:var(--acc);box-shadow:0 0 0 4px color-mix(in srgb,var(--acc) 22%,transparent)}
+.awb .tl .tt{font-size:13px;line-height:1.35;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.awb .tl .tm2{font-size:11.5px;color:var(--muted)}
+.awb .tl li.now .tt{font-weight:600}.awb .tl li.now .tm{color:var(--acc);font-weight:600}
+.awb .tl li.sep{padding-top:3px;padding-bottom:3px}.awb .tl li.sep .tt{font-size:11.5px;color:var(--muted)}
+.awb .tl li.sep .rail i{width:6px;height:6px;left:4px;top:5px;border:0;background:var(--faint)}
+/* —— 悬浮底栏 —— */
+.awb .dock{position:sticky;bottom:0;z-index:4;margin:auto -20px 0;padding:10px 20px 14px;
+  background:linear-gradient(to bottom,transparent,color-mix(in srgb,var(--surface) 70%,transparent) 26px)}
+.awb .dock .inner{max-width:760px;margin:0 auto;border-radius:20px;padding:8px;
+  background:color-mix(in srgb,var(--surface) 82%,transparent);-webkit-backdrop-filter:saturate(180%) blur(22px);backdrop-filter:saturate(180%) blur(22px);
+  border:1px solid var(--hair);box-shadow:0 8px 30px rgba(0,0,0,.12),0 1px 2px rgba(0,0,0,.06)}
+.awb .dock .sheet{max-height:min(46vh,380px);overflow:auto;padding:4px 6px 8px;margin-bottom:6px;border-bottom:1px solid var(--hair)}
+.awb .dock .sheet .msg{margin:6px 0;padding:8px 13px;border-radius:18px;max-width:86%;font-size:13.5px;width:fit-content}
+.awb .dock .sheet .msg.me{margin-left:auto;background:var(--acc);color:#fff;border-bottom-right-radius:6px}
+.awb .dock .sheet .msg.coach{background:var(--fill);border:0;border-bottom-left-radius:6px}
+.awb .dock .ctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:0 4px 6px}
+.awb .seg{display:inline-flex;gap:2px;padding:2px;border-radius:9px;background:var(--fill)}
+.awb .seg button{border:0;background:none;padding:3px 10px;border-radius:7px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;white-space:nowrap}
+.awb .seg button.on{background:var(--surface);color:inherit;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.awb .dock select.in{padding:3px 8px;font-size:12px;border-radius:8px;max-width:240px}
+.awb .composer{display:flex;gap:8px;align-items:flex-end}
+.awb .composer textarea{flex:1;border:0;background:var(--fill);border-radius:16px;padding:9px 14px;resize:none;outline:none;max-height:140px;font-size:14px;line-height:1.45;min-height:38px}
+.awb .composer textarea:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 30%,transparent)}
+.awb .send{width:36px;height:36px;border-radius:50%;border:0;background:var(--acc);color:#fff;font-size:17px;font-weight:700;cursor:pointer;flex:none;display:grid;place-items:center;transition:opacity .15s,transform .1s}
+.awb .send:disabled{opacity:.3;cursor:default}.awb .send:active:not(:disabled){transform:scale(.92)}
+.awb .confirm{margin:8px 0 4px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid color-mix(in srgb,var(--acc) 35%,transparent)}
+/* —— 其他标签页沿用 —— */
+.awb .focus{border-radius:16px;padding:14px;background:color-mix(in srgb,var(--acc) 8%,transparent)}
 .awb .must{display:grid;gap:10px}
-.awb .mcard{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:var(--soft)}
-.awb .mcard.cur{border-color:var(--acc);box-shadow:0 0 0 2px #6c7cff33}
-.awb .mcard.dim{opacity:.55}
-.awb .num{width:22px;height:22px;border-radius:50%;display:inline-grid;place-items:center;font-size:12px;font-weight:700;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#fff;flex:none}
-.awb .bar{height:6px;border-radius:9px;background:color-mix(in srgb,currentColor 10%,transparent);overflow:hidden;margin:8px 0 4px}
-.awb .bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2));transition:width .3s}
-.awb .steps{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:4px}
-.awb .steps li{display:flex;gap:8px;align-items:flex-start;padding:3px 4px;border-radius:8px}
-.awb .steps li.next{background:#6c7cff18;font-weight:600}
-.awb .steps li.done span{text-decoration:line-through;color:var(--muted)}
+.awb .bar{height:4px;border-radius:9px;background:var(--fill);overflow:hidden;margin:8px 0 4px}
+.awb .bar>i{display:block;height:100%;background:var(--acc);transition:width .3s}
 .awb .small{display:grid;gap:4px}
-.awb .small .it{display:flex;gap:8px;align-items:center;padding:5px 8px;border-radius:9px;border:1px dashed var(--line)}
-.awb .blocks{display:grid;gap:3px}
-.awb .blk{display:grid;grid-template-columns:96px 1fr;gap:8px;padding:4px 8px;border-radius:8px;font-size:12.5px}
-.awb .blk.focus{background:#6c7cff14}.awb .blk.growth{background:#2fb67c14}.awb .blk.break{color:var(--muted)}.awb .blk.warmup{background:#e8a33d14}.awb .blk.batch{background:#ff6fb514}
+.awb .small .it{display:flex;gap:8px;align-items:center;padding:7px 10px;border-radius:10px;background:var(--soft);border:1px solid var(--hair)}
 .awb .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
-.awb .ws{border:1px solid var(--line);border-radius:14px;padding:10px 12px;margin-bottom:10px}
-.awb .sess{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.awb .ws{border:1px solid var(--hair);background:var(--soft);border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.awb .sess{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--hair)}
 .awb .sess:first-of-type{border-top:0}
-.awb .dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--muted)}.awb .dot.running{background:var(--ok);box-shadow:0 0 0 3px #2fb67c33}
-.awb .ideas{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.awb .dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--faint)}.awb .dot.running{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.awb .ideas{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
 .awb .chips{display:flex;gap:6px;flex-wrap:wrap}
-.awb .chip{border:1px solid var(--line);border-radius:999px;padding:2px 10px;cursor:pointer;background:none;font-size:12px}
-.awb .chip.on{background:color-mix(in srgb,var(--acc) 22%,transparent);border-color:var(--acc)}
-.awb .msg{padding:10px 12px;border-radius:12px;margin:8px 0;max-width:92%}
-.awb .msg.me{margin-left:auto;background:#6c7cff1c}
-.awb .msg.coach{border:1px solid var(--line);background:var(--soft)}
-.awb .paper{margin-top:8px;padding:10px 12px;border-radius:10px;background:#e8a33d1f;border:1px dashed #e8a33d}
-.awb .clar{font-weight:700}.awb .clar.low{color:var(--bad)}.awb .clar.medium{color:var(--warn)}.awb .clar.high{color:var(--ok)}
+.awb .chip{border:0;border-radius:999px;padding:4px 12px;cursor:pointer;background:var(--fill);font-size:12.5px;font-weight:500}
+.awb .chip:hover:not(:disabled){background:color-mix(in srgb,currentColor 11%,transparent)}
+.awb .chip.on{background:var(--acc);color:#fff}
+.awb .msg{padding:10px 13px;border-radius:16px;margin:8px 0;max-width:92%}
+.awb .msg.me{margin-left:auto;background:color-mix(in srgb,var(--acc) 14%,transparent)}
+.awb .msg.coach{background:var(--soft);border:1px solid var(--hair)}
+.awb .paper{margin-top:8px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--warn) 12%,transparent)}
+.awb .clar{font-weight:600}.awb .clar.low{color:var(--bad)}.awb .clar.medium{color:var(--warn)}.awb .clar.high{color:var(--ok)}
 .awb .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
-.awb .kpi{border:1px solid var(--line);border-radius:12px;padding:10px}.awb .kpi b{display:block;font-size:20px}
+.awb .kpi{border-radius:14px;padding:12px;background:var(--soft);border:1px solid var(--hair)}.awb .kpi b{display:block;font-size:22px;font-weight:600;letter-spacing:-.02em}
 .awb .hours{display:flex;align-items:flex-end;gap:2px;height:70px;margin-top:6px}
-.awb .hours i{flex:1;background:linear-gradient(0deg,var(--acc),var(--acc2));border-radius:3px 3px 0 0;min-height:1px}
-.awb .ins{padding:8px 10px;border-radius:10px;margin-bottom:6px;border-left:3px solid var(--acc);background:var(--soft)}
+.awb .hours i{flex:1;background:var(--acc);border-radius:3px 3px 0 0;min-height:1px}
+.awb .ins{padding:10px 12px;border-radius:12px;margin-bottom:6px;background:var(--soft);border:1px solid var(--hair);border-left:3px solid var(--acc)}
 .awb .ins.warn{border-left-color:var(--warn)}.awb .ins.good{border-left-color:var(--ok)}
-.awb .toast{position:sticky;top:0;z-index:5;padding:8px 12px;border-radius:10px;margin-bottom:8px;background:#2fb67c22;border:1px solid #2fb67c66;animation:awbpop .4s}
-.awb .toast.err{background:#e5534b1f;border-color:#e5534b66}
-@keyframes awbpop{0%{transform:scale(.9);opacity:0}100%{transform:none;opacity:1}}
-.awb pre.md{white-space:pre-wrap;font-size:12px;max-height:340px;overflow:auto;padding:10px;border-radius:10px;border:1px solid var(--line)}
-.awb .ring text{font-weight:700}
+.awb .toast{position:sticky;top:0;z-index:6;align-self:center;height:0;overflow:visible;display:flex;justify-content:center}
+.awb .toast>span{display:inline-block;margin-top:4px;padding:8px 16px;border-radius:999px;font-size:13px;font-weight:500;background:var(--surface);border:1px solid var(--hair);box-shadow:0 6px 24px rgba(0,0,0,.14);animation:awbpop .35s cubic-bezier(.2,.9,.3,1.2)}
+.awb .toast.err>span{color:var(--bad)}
+@keyframes awbpop{0%{transform:translateY(-6px) scale(.96);opacity:0}100%{transform:none;opacity:1}}
+.awb pre.md{white-space:pre-wrap;font-size:12px;max-height:340px;overflow:auto;padding:12px;border-radius:12px;background:var(--fill)}
+.awb .ring text{font-weight:600}
 .awb .intake .chat{max-height:300px;overflow:auto}
-.awb .intake .msg{margin:4px 0;padding:7px 11px}
-.awb .confirm{margin:6px 0;padding:10px 12px;border-radius:12px;border:1px solid var(--acc);background:#6c7cff12}
 .awb .src{margin-bottom:18px}
-.awb .src>.hd{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:2px solid var(--line);margin-bottom:10px;cursor:pointer}
+.awb .src>.hd{display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line);margin-bottom:10px;cursor:pointer}
 .awb .wsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
 .awb .wsgrid .ws{margin:0}
-.awb .srcrow{display:grid;grid-template-columns:24px 120px 130px 1fr 70px 96px auto;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
-@media (max-width:760px){.awb .srcrow{grid-template-columns:24px 1fr 1fr}}
+.awb .srcrow{display:grid;grid-template-columns:24px 120px 130px 1fr 70px 96px auto;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--hair)}
+.awb .tabpage{padding-bottom:28px}
+@container (max-width:760px){.awb .srcrow{grid-template-columns:24px 1fr 1fr}}
 @media (prefers-reduced-motion:reduce){.awb *{animation:none!important;transition:none!important}}
 `
 
@@ -193,24 +281,30 @@ window.__ModuleLoader__.load({
       const all = [...plan.must, ...plan.small, ...plan.backlog]
       const activeTask = active && all.find((t) => t.id === active.taskId)
       const next = plan.next
-      if (!next && !activeTask) return h('div', { className: 'focus' }, h('div', { className: 'big' }, plan.doneToday.length ? `🎉 今天的必做都清空了（完成 ${plan.doneToday.length} 项）` : '还没有任务'), h('p', { className: 'muted' }, plan.doneToday.length ? '可以收工，或者从小任务里挑一个。' : '在下面「今日」里加一个任务，越小越好。'))
+      if (!next && !activeTask) return h('section', { className: 'hero' },
+        h('div', { className: 'eyebrow' }, plan.doneToday.length ? '今天' : '开始'),
+        h('div', { className: 'title' }, plan.doneToday.length ? `必做都清空了，完成 ${plan.doneToday.length} 项` : '还没有任务'),
+        h('div', { className: 'sub' }, plan.doneToday.length ? '可以收工，或者挑一个小任务。' : '在下面说一句你想做的事，越小越好。'),
+        !plan.doneToday.length && h('div', { className: 'acts' }, h('button', { className: 'btn pri', onClick: () => focusDock('task') }, '＋ 加一个任务')))
       const taskId = activeTask?.id ?? next.taskId
       const task = all.find((t) => t.id === taskId)
       const step = (task?.steps ?? []).find((s) => !s.done)
-      return h('div', { className: 'focus', 'aria-live': 'polite' },
-        h('div', { className: 'row' },
+      const over = active && elapsed >= target
+      return h('section', { className: 'hero', 'aria-live': 'polite' },
+        h('div', { className: 'row', style: { alignItems: 'flex-start', flexWrap: 'nowrap' } },
           h('div', { className: 'grow' },
-            h('span', { className: 'muted' }, activeTask ? '正在专注' : '现在只做这一步'),
-            h('div', { className: 'big' }, step ? step.title : next?.stepTitle ?? task?.title),
-            h('span', { className: 'muted' }, `属于：${task?.title ?? ''}${step ? ` · 预计 ${step.estimateMin} 分钟` : ''}`)),
-          active && h('div', { className: cx('clock', elapsed >= target && 'over') }, fmtClock(elapsed))),
-        h('div', { className: 'row', style: { marginTop: 8 } },
-          !active && h('button', { className: 'btn pri', onClick: () => act.focus(taskId, 'start', step?.id) }, '▶ 开始专注'),
-          active && step && h('button', { className: 'btn pri', onClick: () => act.step(taskId, step.id, true) }, '✓ 这一步完成'),
-          active && h('button', { className: 'btn', onClick: () => act.focus(taskId, 'interrupt') }, '😵 被打断了'),
-          active && h('button', { className: 'btn', onClick: () => act.focus(taskId, 'stop') }, '⏸ 暂停'),
-          !step && task && h('button', { className: 'btn', disabled: act.busy === `s${taskId}`, onClick: () => act.split(taskId) }, act.busy === `s${taskId}` ? '拆分中…' : '✂️ 帮我拆成小步'),
-          h('span', { className: 'muted' }, active ? `目标 ${plan.stats.focusMinutes} 分钟（按你的习惯设定）` : '卡住了？去「今日」点「换一个」')))
+            h('div', { className: 'eyebrow' }, active ? '正在专注' : '现在只做这一步'),
+            h('div', { className: 'title' }, step ? step.title : next?.stepTitle ?? task?.title),
+            h('div', { className: 'sub' }, [step && task?.title, step && `预计 ${step.estimateMin} 分钟`, !step && task && '还没拆成小步'].filter(Boolean).join(' · '))),
+          active && h('div', { style: { textAlign: 'right' } },
+            h('div', { className: cx('clock', over && 'over') }, fmtClock(elapsed)),
+            h('div', { className: 'muted', style: { marginTop: 4 } }, over ? '到时间了，起来活动一下' : `目标 ${plan.stats.focusMinutes} 分钟`))),
+        h('div', { className: 'acts' },
+          !active && h('button', { className: 'btn pri', onClick: () => act.focus(taskId, 'start', step?.id) }, '▶  开始专注'),
+          active && step && h('button', { className: 'btn pri', onClick: () => act.step(taskId, step.id, true) }, '✓  这一步完成'),
+          !step && task && h('button', { className: cx('btn', !active ? '' : 'pri'), disabled: act.busy === `s${taskId}`, onClick: () => act.split(taskId) }, act.busy === `s${taskId}` ? '拆分中…' : '✂️  帮我拆成小步'),
+          active && h('button', { className: 'btn', onClick: () => act.focus(taskId, 'interrupt') }, '被打断了'),
+          active && h('button', { className: 'btn', onClick: () => act.focus(taskId, 'stop') }, '暂停')))
     }
 
     // ———————— 对话式录入：说一句话，没说清的重要 / 紧急 / 截止日期逐项追问 ————————
@@ -224,22 +318,20 @@ window.__ModuleLoader__.load({
     }
     const ORDER = ['importance', 'urgency', 'due']
 
-    function IntakeChat({ onAdded, notify }) {
-      const hello = { bot: '想做什么？随口说一句就行，比如「明天下班前把内链方案发给老板，挺急的」。' }
+    // 录入逻辑（状态在组件外保存，切走再回来仍在）
+    function useIntake({ onAdded, notify }) {
+      const hello = { bot: '想做什么？随口说一句，比如「明天下班前把内链方案发给老板，挺急的」。' }
       const [msgs, setMsgs] = useKept('intake.msgs', [hello])
       const [draft, setDraft] = useKept('intake.draft', null)
       const [ask, setAsk] = useKept('intake.ask', null) // 正在追问的字段
       const [text, setText] = useKept('intake.text', '')
       const [busy, setBusy] = useKept('intake.busy', false, false)
-      const endRef = useRef(null)
-      useEffect(() => { endRef.current?.scrollIntoView({ block: 'nearest' }) }, [msgs, ask])
       const say = (m) => setMsgs((x) => [...x, m])
       const nextField = (d) => ORDER.find((f) => d[f] == null) ?? null
       const advance = (d) => { setDraft(d); const f = nextField(d); setAsk(f); if (f) say({ bot: ASK[f].q, field: f }) }
       const reset = () => { setMsgs([hello]); setDraft(null); setAsk(null); setText('') }
-
-      const submit = async (e) => {
-        e?.preventDefault(); const t = text.trim(); if (!t || busy) return
+      const submit = async () => {
+        const t = text.trim(); if (!t || busy) return
         setText(''); say({ me: t }); setBusy(true)
         try {
           if (!draft) {
@@ -249,10 +341,9 @@ window.__ModuleLoader__.load({
             advance(d)
           } else if (ask) {
             const r = await api('POST', '/intake/answer', { field: ask, text: t })
-            if (r.value == null) say({ bot: '没太听懂，换个说法，或者点下面的选项？', field: ask })
+            if (r.value == null) say({ bot: '没太听懂，换个说法，或者点上面的选项？', field: ask })
             else advance({ ...draft, [ask]: r.value })
           } else {
-            // 确认阶段继续说话：当作改标题
             setDraft({ ...draft, title: t.slice(0, 80) }); say({ bot: `标题改成「${t.slice(0, 80)}」。` })
           }
         } catch (err) { notify(err.message, true) } finally { setBusy(false) }
@@ -268,103 +359,217 @@ window.__ModuleLoader__.load({
         setBusy(true)
         try {
           await api('POST', '/tasks', { title: draft.title, track: draft.track, importance: draft.importance, urgency: draft.urgency, estimateMin: draft.estimateMin ?? 30, due: draft.due === 'none' ? null : draft.due })
-          notify(`✅ 已加入：${draft.title}`); reset(); onAdded()
+          notify(`已加入：${draft.title}`); reset(); onAdded()
         } catch (err) { notify(err.message, true) } finally { setBusy(false) }
       }
-      const last = msgs[msgs.length - 1]
-      const ready = draft && !ask
-      return h('div', { className: 'card intake' },
-        h('div', { className: 'chat' }, msgs.map((m, i) => h('div', { key: i, className: cx('msg', m.me ? 'me' : 'coach') }, m.me ?? m.bot)),
-          ask && last?.field === ask && h('div', { className: 'chips', style: { margin: '2px 0 6px' } }, ASK[ask].chips.map(([v, l]) => h('button', { key: l, className: 'chip', disabled: busy, onClick: () => pickChip(ask, v ?? l, l) }, l))),
-          ready && h('div', { className: 'confirm' },
-            h('b', null, draft.title),
-            h('div', { className: 'row', style: { marginTop: 6 } },
-              h('span', { className: 'chips' }, Object.entries(TRACK).map(([k, [l, ic]]) => h('button', { key: k, className: cx('chip', draft.track === k && 'on'), onClick: () => setDraft({ ...draft, track: k }) }, `${ic} ${l}`))),
-              h('label', { className: 'muted' }, '预计 ', h('input', { className: 'in', type: 'number', min: 5, step: 5, style: { width: 64, padding: '2px 6px' }, value: draft.estimateMin ?? 30, onChange: (e) => setDraft({ ...draft, estimateMin: Number(e.target.value) }) }), ' 分钟')),
-            h('div', { className: 'row', style: { marginTop: 6 } },
-              ORDER.map((f) => h('button', { key: f, className: 'badge', style: { border: 0, cursor: 'pointer' }, title: '点击重新回答', onClick: () => { setAsk(f); say({ bot: ASK[f].q, field: f }) } },
-                f === 'importance' ? `重要：${IMP[draft.importance]}` : f === 'urgency' ? `紧急：${URG[draft.urgency]}` : dueLabel(draft.due), ' ✎'))),
-            h('div', { className: 'row', style: { marginTop: 8 } },
-              h('button', { className: 'btn pri', disabled: busy, onClick: confirm }, '✓ 加入任务'),
-              h('button', { className: 'btn ghost', onClick: reset }, '重来'),
-              h('span', { className: 'muted' }, '想改标题就直接再说一句'))),
-          busy && h('p', { className: 'muted' }, '想一下…'),
-          h('div', { ref: endRef })),
-        h('form', { className: 'row', style: { marginTop: 6 }, onSubmit: submit },
-          h('input', { className: 'in grow', value: text, 'aria-label': '用一句话说任务', placeholder: !draft ? '我要…' : ask ? '直接回答，或点上面的选项' : '改标题，或点「加入任务」', onChange: (e) => setText(e.target.value) }),
-          h('button', { className: 'btn pri', disabled: busy || !text.trim() }, '发送'),
-          draft && h('button', { type: 'button', className: 'btn ghost', onClick: reset }, '清空')))
+      const reask = (f) => { setAsk(f); say({ bot: ASK[f].q, field: f }) }
+      return { msgs, draft, setDraft, ask, text, setText, busy, submit, pickChip, confirm, reset, reask, active: !!draft || msgs.length > 1 }
     }
 
-    function TaskCard({ t, index, act, isCurrent, dim, onSwap }) {
-      const [open, setOpen] = useState(isCurrent)
-      const [stepText, setStepText] = useKept(`card.${t.id}.step`, '')
-      const [noteText, setNoteText] = useKept(`card.${t.id}.note`, '')
-      const [noteKind, setNoteKind] = useKept(`card.${t.id}.kind`, 'done')
+    function IntakeThread({ it }) {
+      const endRef = useRef(null)
+      useEffect(() => { endRef.current?.scrollIntoView({ block: 'nearest' }) }, [it.msgs.length, it.ask, it.draft && !it.ask])
+      const last = it.msgs[it.msgs.length - 1]
+      const ready = it.draft && !it.ask
+      const d = it.draft
+      return h(Fragment, null,
+        it.msgs.map((m, i) => h('div', { key: i, className: cx('msg', m.me ? 'me' : 'coach') }, m.me ?? m.bot)),
+        it.ask && last?.field === it.ask && h('div', { className: 'chips', style: { margin: '2px 0 4px' } }, ASK[it.ask].chips.map(([v, l]) => h('button', { key: l, className: 'chip', disabled: it.busy, onClick: () => it.pickChip(it.ask, v ?? l, l) }, l))),
+        ready && h('div', { className: 'confirm' },
+          h('div', { style: { fontSize: 15, fontWeight: 600 } }, d.title),
+          h('div', { className: 'row', style: { marginTop: 8 } },
+            h('span', { className: 'seg' }, Object.entries(TRACK).map(([k, [l, ic]]) => h('button', { key: k, className: cx(d.track === k && 'on'), onClick: () => it.setDraft({ ...d, track: k }) }, `${ic} ${l}`))),
+            h('label', { className: 'muted' }, '预计 ', h('input', { className: 'in', type: 'number', min: 5, step: 5, style: { width: 62, padding: '2px 6px' }, value: d.estimateMin ?? 30, onChange: (e) => it.setDraft({ ...d, estimateMin: Number(e.target.value) }) }), ' 分钟')),
+          h('div', { className: 'row', style: { marginTop: 8, gap: 6 } },
+            ORDER.map((f) => h('button', { key: f, className: 'chip', title: '点击重新回答', onClick: () => it.reask(f) },
+              f === 'importance' ? `重要：${IMP[d.importance]}` : f === 'urgency' ? `紧急：${URG[d.urgency]}` : dueLabel(d.due)))),
+          h('div', { className: 'row', style: { marginTop: 12 } },
+            h('button', { className: 'btn pri', disabled: it.busy, onClick: it.confirm }, '加入任务'),
+            h('button', { className: 'link plain', onClick: it.reset }, '重来'),
+            h('span', { className: 'muted' }, '想改标题，直接再说一句'))),
+        it.busy && h('div', { className: 'msg coach muted' }, '…'),
+        h('div', { ref: endRef }))
+    }
+
+    // 底部悬浮输入栏：今日模块所有输入都在这里（新任务 / 加一步 / 记汇报要点）
+    const dockBus = new EventTarget()
+    const focusDock = (mode, taskId) => dockBus.dispatchEvent(new CustomEvent('focus', { detail: { mode, taskId } }))
+    const NOTE_KIND = [['done', '做了什么'], ['approach', '方案'], ['result', '结果'], ['issue', '问题']]
+
+    function Dock({ plan, act, reload, notify }) {
+      const it = useIntake({ onAdded: reload, notify })
+      const [mode, setMode] = useKept('dock.mode', 'task')
+      const [target, setTarget] = useKept('dock.target', null)
+      const [kind, setKind] = useKept('dock.kind', 'done')
+      const [stepText, setStepText] = useKept('dock.step', '')
+      const [noteText, setNoteText] = useKept('dock.note', '')
+      const [folded, setFolded] = useKept('dock.folded', false)
+      const taRef = useRef(null)
+      const tasks = [...plan.must, ...plan.small, ...plan.backlog]
+      const targetId = tasks.some((t) => t.id === target) ? target : plan.next?.taskId ?? tasks[0]?.id
+      const value = mode === 'task' ? it.text : mode === 'step' ? stepText : noteText
+      const setValue = mode === 'task' ? it.setText : mode === 'step' ? setStepText : setNoteText
+      useEffect(() => {
+        const on = (e) => { setMode(e.detail.mode); if (e.detail.taskId) setTarget(e.detail.taskId); setFolded(false); setTimeout(() => taRef.current?.focus(), 30) }
+        dockBus.addEventListener('focus', on); return () => dockBus.removeEventListener('focus', on)
+      }, [])
+      const send = async () => {
+        if (mode === 'task') return it.submit()
+        const v = value.trim(); if (!v || !targetId) return
+        const ok = mode === 'step' ? await act.addStep(targetId, v) : await act.note(targetId, kind, v)
+        if (ok !== undefined) setValue('')
+      }
+      const busy = mode === 'task' ? it.busy : act.busy === `as${targetId}` || act.busy === `n${targetId}`
+      const showSheet = mode === 'task' && it.active && !folded
+      const ph = { task: !it.draft ? '我要…（说一句话加任务）' : it.ask ? '直接回答，或点上面的选项' : '改标题，或点「加入任务」', step: '给这个任务加一步…', note: '例如：内链覆盖率从 40% 提到 75%' }[mode]
+      return h('div', { className: 'dock' }, h('div', { className: 'inner' },
+        showSheet && h('div', { className: 'sheet' },
+          h('div', { className: 'row', style: { padding: '2px 2px 0' } },
+            h('span', { className: 'muted grow', style: { fontWeight: 600 } }, '新任务'),
+            h('button', { className: 'link plain', onClick: () => setFolded(true) }, '收起'),
+            h('button', { className: 'link plain', onClick: it.reset }, '清空')),
+          h(IntakeThread, { it })),
+        h('div', { className: 'ctl' },
+          h('span', { className: 'seg', role: 'tablist', 'aria-label': '输入类型' },
+            [['task', '新任务'], ['step', '加一步'], ['note', '记要点']].map(([k, l]) => h('button', { key: k, role: 'tab', 'aria-selected': mode === k, className: cx(mode === k && 'on'), onClick: () => { setMode(k); setFolded(false); taRef.current?.focus() } }, l))),
+          mode !== 'task' && (tasks.length
+            ? h('select', { className: 'in', value: targetId ?? '', 'aria-label': '选择任务', onChange: (e) => setTarget(e.target.value) }, tasks.map((t) => h('option', { key: t.id, value: t.id }, t.title)))
+            : h('span', { className: 'muted' }, '先加一个任务')),
+          mode === 'note' && h('span', { className: 'seg' }, NOTE_KIND.map(([k, l]) => h('button', { key: k, className: cx(kind === k && 'on'), onClick: () => setKind(k) }, l))),
+          mode === 'task' && it.active && folded && h('button', { className: 'link', onClick: () => setFolded(false) }, it.draft ? `继续录入「${it.draft.title}」` : '展开对话')),
+        h('form', { className: 'composer', onSubmit: (e) => { e.preventDefault(); send() } },
+          h('textarea', { ref: taRef, rows: Math.min(4, (value.match(/\n/g)?.length ?? 0) + 1), value, placeholder: ph, 'aria-label': ph,
+            onChange: (e) => setValue(e.target.value),
+            onKeyDown: (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send() } } }),
+          h('button', { className: 'send', disabled: busy || !value.trim() || (mode !== 'task' && !targetId), 'aria-label': '发送' }, busy ? '…' : '↑'))))
+    }
+
+    const shortDue = (d) => {
+      if (!d) return ''
+      const today = new Date(); today.setHours(12, 0, 0, 0)
+      const diff = Math.round((new Date(`${d}T12:00:00`) - today) / 86400000)
+      return diff === 0 ? '今天截止' : diff === 1 ? '明天截止' : diff < 0 ? `已逾期 ${-diff} 天` : diff < 7 ? `${diff} 天后截止` : `${Number(d.slice(5, 7))}/${Number(d.slice(8))} 截止`
+    }
+
+    // 任务行：默认只显示标题和一行说明，点开才看步骤和更多操作
+    function TaskRow({ t, index, act, isCurrent, open, onToggle, onSwap }) {
       const steps = t.steps ?? []
       const doneN = steps.filter((s) => s.done).length
       const nextStep = steps.find((s) => !s.done)
-      const pct = steps.length ? Math.round((doneN / steps.length) * 100) : t.status === 'done' ? 100 : 0
-      return h('div', { className: cx('mcard', isCurrent && 'cur', dim && 'dim') },
-        h('div', { className: 'row' },
-          index != null && h('span', { className: 'num' }, index + 1),
-          h('b', { className: 'grow', style: { cursor: 'pointer' }, onClick: () => setOpen(!open) }, t.title),
-          h(Badge, { track: t.track }),
-          h('span', { className: 'muted', title: '已按你的速度系数修正' }, `≈${t.adjustedEstimate ?? t.estimateMin} 分钟`),
-          t.due && h('span', { className: 'badge' }, `📅 ${t.due}`)),
-        h('div', { className: 'bar' }, h('i', { style: { width: `${pct}%` } })),
-        h('div', { className: 'row' },
-          h('span', { className: 'muted grow' }, steps.length ? `${doneN}/${steps.length} 步 · 已专注 ${t.actualMin} 分钟` : '还没拆分（大任务先拆，阻力会小很多）'),
-          !steps.length && h('button', { className: 'btn', disabled: act.busy === `s${t.id}`, onClick: () => act.split(t.id) }, act.busy === `s${t.id}` ? '拆分中…' : '✂️ 拆分'),
-          h('button', { className: 'btn', onClick: () => act.focus(t.id, 'start', nextStep?.id) }, '▶ 专注'),
-          onSwap && h('button', { className: 'btn', title: '换一个必做任务（不评判，换个方向也是推进）', onClick: onSwap }, '🔀 换一个'),
-          h('button', { className: 'btn ghost', onClick: () => setOpen(!open), 'aria-expanded': open }, open ? '收起' : '展开')),
-        open && h(Fragment, null,
-          h('ul', { className: 'steps' }, steps.map((s) => h('li', { key: s.id, className: cx(s.done && 'done', s === nextStep && 'next') },
-            h('input', { type: 'checkbox', checked: s.done, onChange: (e) => act.step(t.id, s.id, e.target.checked), 'aria-label': s.title }),
+      const pct = steps.length ? Math.round((doneN / steps.length) * 100) : 0
+      const due = shortDue(t.due)
+      const meta = [`${TRACK[t.track]?.[1] ?? ''} ${TRACK[t.track]?.[0] ?? ''}`.trim(), `约 ${t.adjustedEstimate ?? t.estimateMin} 分钟`, steps.length ? `${doneN}/${steps.length} 步` : '未拆分']
+      return h(Fragment, null,
+        h('div', { className: cx('rowi click', isCurrent && 'cur'), role: 'button', tabIndex: 0, 'aria-expanded': open, onClick: onToggle, onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle() } } },
+          index != null ? h('span', { className: 'lead' }, index + 1) : h('span', { className: 'lead' }, '·'),
+          h('div', { className: 'grow' },
+            h('div', { className: 't' }, t.title),
+            h('div', { className: 'm' }, meta.join(' · '), due && h('span', { style: { color: due.startsWith('已逾期') || due.startsWith('今天') ? 'var(--bad)' : due.startsWith('明天') ? 'var(--warn)' : undefined } }, ` · ${due}`)),
+            steps.length > 0 && h('div', { className: 'prog' }, h('i', { style: { width: `${pct}%` } }))),
+          !steps.length && h('button', { className: 'btn', disabled: act.busy === `s${t.id}`, onClick: (e) => { e.stopPropagation(); act.split(t.id) } }, act.busy === `s${t.id}` ? '拆分中…' : '拆分'),
+          h('span', { className: cx('chev', open && 'open'), 'aria-hidden': true }, '›')),
+        open && h('div', { className: 'detail' },
+          steps.length > 0 && h('ul', { className: 'sl' }, steps.map((s) => h('li', { key: s.id, className: cx(s.done && 'done', s === nextStep && 'next') },
+            h('button', { className: cx('ck', s.done && 'on'), 'aria-label': `${s.done ? '取消完成' : '完成'}：${s.title}`, onClick: () => act.step(t.id, s.id, !s.done) }, s.done ? '✓' : ''),
             h('span', { className: 'grow' }, s.title), h('span', { className: 'muted' }, `${s.estimateMin}′`),
-            h('button', { className: 'btn ghost', 'aria-label': '删除步骤', onClick: () => act.delStep(t.id, s.id) }, '×')))),
-          h('form', { className: 'row', style: { marginTop: 6 }, onSubmit: (e) => { e.preventDefault(); if (stepText.trim()) { act.addStep(t.id, stepText.trim()); setStepText('') } } },
-            h('input', { className: 'in grow', placeholder: '手动加一步…', value: stepText, onChange: (e) => setStepText(e.target.value) }),
-            steps.length > 0 && h('button', { type: 'button', className: 'btn', onClick: () => act.split(t.id, false) }, '✂️ 重新拆剩余部分')),
-          h('h4', null, '汇报要点（做完顺手记一句，周报不用愁）'),
-          (t.notes ?? []).map((n) => h('div', { key: n.id, className: 'row' }, h('span', { className: 'badge' }, { done: '做了', approach: '方案', result: '结果', issue: '问题' }[n.kind]), h('span', { className: 'grow' }, n.text), h('button', { className: 'btn ghost', onClick: () => act.delNote(t.id, n.id) }, '×'))),
-          h('form', { className: 'row', style: { marginTop: 6 }, onSubmit: (e) => { e.preventDefault(); if (noteText.trim()) { act.note(t.id, noteKind, noteText.trim()); setNoteText('') } } },
-            h('select', { className: 'in', value: noteKind, onChange: (e) => setNoteKind(e.target.value) }, [['done', '做了什么'], ['approach', '执行方案'], ['result', '结果/数据'], ['issue', '问题/风险']].map(([v, l]) => h('option', { key: v, value: v }, l))),
-            h('input', { className: 'in grow', placeholder: '例如：内链覆盖率从 40% 提到 75%', value: noteText, onChange: (e) => setNoteText(e.target.value) }),
-            h('button', { className: 'btn' }, '记录')),
-          h('div', { className: 'row', style: { marginTop: 8 } },
-            h('span', { className: 'muted' }, '重要'), h(Stars, { value: t.importance, label: '重要', onChange: (v) => act.patch(t.id, { importance: v }) }),
-            h('span', { className: 'muted' }, '紧急'), h(Stars, { value: t.urgency, label: '紧急', onChange: (v) => act.patch(t.id, { urgency: v }) }),
+            h('button', { className: 'link plain', 'aria-label': '删除步骤', onClick: () => act.delStep(t.id, s.id) }, '×')))),
+          (t.notes ?? []).length > 0 && h('div', { className: 'notes' },
+            h('div', { className: 'muted', style: { fontWeight: 600 } }, '汇报要点'),
+            t.notes.map((n) => h('div', { key: n.id, className: 'row', style: { gap: 6 } }, h('span', { className: 'badge' }, { done: '做了', approach: '方案', result: '结果', issue: '问题' }[n.kind]), h('span', { className: 'grow' }, n.text), h('button', { className: 'link plain', 'aria-label': '删除要点', onClick: () => act.delNote(t.id, n.id) }, '×')))),
+          h('div', { className: 'row', style: { marginTop: 10, gap: 14 } },
+            h('span', { className: 'row', style: { gap: 2 } }, h('span', { className: 'muted' }, '重要'), h(Stars, { value: t.importance, label: '重要', onChange: (v) => act.patch(t.id, { importance: v }) })),
+            h('span', { className: 'row', style: { gap: 2 } }, h('span', { className: 'muted' }, '紧急'), h(Stars, { value: t.urgency, label: '紧急', onChange: (v) => act.patch(t.id, { urgency: v }) }))),
+          h('div', { className: 'foot' },
+            h('button', { className: 'link', onClick: () => act.focus(t.id, 'start', nextStep?.id) }, '开始专注'),
+            h('button', { className: 'link', onClick: () => focusDock('step', t.id) }, '加一步'),
+            h('button', { className: 'link', onClick: () => focusDock('note', t.id) }, '记要点'),
+            steps.length > 0 && h('button', { className: 'link', disabled: act.busy === `s${t.id}`, onClick: () => act.split(t.id, false) }, '重新拆剩余'),
+            onSwap && h('button', { className: 'link', title: '换一个必做任务（换个方向也是推进）', onClick: onSwap }, '换一个'),
             h('span', { className: 'grow' }),
-            t.status !== 'done' && h('button', { className: 'btn', onClick: () => act.patch(t.id, { status: 'done' }, '🎉 完成！') }, '✓ 标记完成'),
-            h('button', { className: 'btn ghost', onClick: () => act.patch(t.id, { status: 'dropped' }, '已放下这个任务（放下也是一种决定）') }, '放下'),
-            h('button', { className: 'btn ghost danger', onClick: () => { if (confirm(`删除「${t.title}」？`)) act.remove(t.id) } }, '删除'))))
+            t.status !== 'done' && h('button', { className: 'link', onClick: () => act.patch(t.id, { status: 'done' }, '完成！') }, '标记完成'),
+            h('button', { className: 'link plain', onClick: () => act.patch(t.id, { status: 'dropped' }, '已放下这个任务（放下也是一种决定）') }, '放下'),
+            h('button', { className: 'link danger', onClick: () => { if (confirm(`删除「${t.title}」？`)) act.remove(t.id) } }, '删除'))))
     }
 
+    // 时间线：连续的同一任务专注块合并成一行，5 分钟小休息不单独占行
+    function groupBlocks(blocks) {
+      const toM = (x) => { const [a, b] = x.split(':').map(Number); return a * 60 + b }
+      const out = []
+      for (const b of blocks) {
+        const s = toM(b.start), e = toM(b.end)
+        if (b.kind === 'break') {
+          if (e - s <= 10) { const last = out[out.length - 1]; if (last && !last.sep) last.endM = e; continue }
+          out.push({ sep: true, title: b.title, startM: s, endM: e, kind: 'break' }); continue
+        }
+        const last = out[out.length - 1]
+        if (last && !last.sep && last.taskId && last.taskId === b.taskId && last.kind === b.kind) { last.endM = e; last.n += 1; last.work += e - s; continue }
+        out.push({ kind: b.kind, title: b.title, taskId: b.taskId, startM: s, endM: e, n: 1, work: e - s })
+      }
+      return out
+    }
+    const hmOf = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`
+
+    function Timeline({ plan, now }) {
+      if (!plan.blocks.length) return h('div', { className: 'empty' }, '今天的工作时间已过，或没有任务可排。')
+      const d = new Date(now), nowM = d.getHours() * 60 + d.getMinutes()
+      const groups = groupBlocks(plan.blocks)
+      return h('ol', { className: 'tl' }, groups.map((g, i) => {
+        const isNow = nowM >= g.startM && nowM < g.endM
+        return h('li', { key: i, className: cx(g.sep ? 'sep' : g.kind, isNow && 'now') },
+          h('span', { className: 'tm' }, hmOf(g.startM)),
+          h('span', { className: 'rail' }, h('i')),
+          h('div', { style: { minWidth: 0 } },
+            h('div', { className: 'tt', title: g.title }, g.sep ? `${g.title} · 到 ${hmOf(g.endM)}` : g.title),
+            !g.sep && h('div', { className: 'tm2' }, `${isNow ? '现在 · ' : ''}${g.n > 1 ? `${g.n} 段专注 · ` : ''}到 ${hmOf(g.endM)}`)))
+      }))
+    }
+
+    const WEEK = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
     function Today(props) {
       const { plan } = props
       const act = useActions(props)
       const [showBacklog, setShowBacklog] = useKept('today.backlog', false)
+      const [showDone, setShowDone] = useKept('today.done', false)
+      const [openId, setOpenId] = useKept('today.open', null)
+      const [now, setNow] = useState(Date.now())
+      useEffect(() => { const t = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(t) }, [])
       if (!plan) return h('p', { className: 'muted' }, '加载中…')
+      const toggle = (id) => setOpenId(openId === id ? null : id)
       const swap = (t) => { const alt = plan.backlog[0] ?? plan.small[0]; if (!alt) return props.notify('任务池里没有可替换的任务', true); act.patch(t.id, { snoozeDate: true }).then(() => act.patch(alt.id, { pinnedDate: true }, `已换成「${alt.title}」，原任务明天再排`)) }
-      return h(Fragment, null,
-        h(IntakeChat, { onAdded: props.reload, notify: props.notify }),
-        plan.capacityChange && h('div', { className: 'ins good', style: { marginTop: 8 } }, '📊 ', plan.capacityChange),
-        h('h4', null, `三大必做（按优先级 + 截止日期自动选出${plan.workday ? '，含 1 个成长任务' : '，休息日不排工作'}）`),
-        plan.must.length ? h('div', { className: 'must' }, plan.must.map((t, i) => h(TaskCard, { key: t.id, t, index: i, act, isCurrent: plan.next?.taskId === t.id, dim: plan.next && plan.next.taskId !== t.id && !plan.active, onSwap: () => swap(t) })))
-          : h('p', { className: 'muted' }, '任务池是空的。先加一个最小的任务吧，比如「打开项目文档」。'),
-        plan.small.length > 0 && h(Fragment, null, h('h4', null, '小任务（≤20 分钟，专注间隙或没状态时做）'),
-          h('div', { className: 'small' }, plan.small.map((t) => h('div', { key: t.id, className: 'it' },
-            h('input', { type: 'checkbox', onChange: () => act.patch(t.id, { status: 'done' }, '✅ 小任务 +1'), 'aria-label': t.title }),
-            h('span', { className: 'grow' }, t.title), h(Badge, { track: t.track }), h('span', { className: 'muted' }, `${t.adjustedEstimate}′`),
-            h('button', { className: 'btn ghost', onClick: () => act.patch(t.id, { pinnedDate: true }, '已提为今日必做') }, '↑ 提为必做'))))),
-        h('h4', null, '今日时间块（执行意图：到点就做这一件）'),
-        plan.blocks.length ? h('div', { className: 'blocks' }, plan.blocks.map((b, i) => h('div', { key: i, className: cx('blk', b.kind) }, h('span', { className: 'muted' }, `${b.start}–${b.end}`), h('span', null, b.title))))
-          : h('p', { className: 'muted' }, '今天的工作时间已过，或没有任务可排。'),
-        plan.doneToday.length > 0 && h(Fragment, null, h('h4', null, `今天已完成 ${plan.doneToday.length} 项 🎉`), h('div', { className: 'small' }, plan.doneToday.map((t) => h('div', { key: t.id, className: 'it' }, '✅ ', h('span', { className: 'grow' }, t.title), h('span', { className: 'muted' }, `${t.actualMin} 分钟`), h('button', { className: 'btn ghost', onClick: () => act.patch(t.id, { status: 'todo' }) }, '撤销'))))),
-        h('h4', null, h('button', { className: 'btn ghost', onClick: () => setShowBacklog(!showBacklog) }, `${showBacklog ? '▾' : '▸'} 任务池（${plan.backlog.length}）`)),
-        showBacklog && h('div', { className: 'must' }, plan.backlog.map((t) => h(TaskCard, { key: t.id, t, act }))))
+      const dt = new Date(`${plan.date}T12:00:00`)
+      const sub = [`${dt.getMonth() + 1}月${dt.getDate()}日 ${WEEK[dt.getDay()]}`, plan.workday ? '工作日' : '休息日', plan.stats.todayFocusMinutes ? `已专注 ${plan.stats.todayFocusMinutes} 分钟` : null, plan.stats.streak ? `连续 ${plan.stats.streak} 天` : null].filter(Boolean).join(' · ')
+      return h('div', { className: 'today' },
+        h('header', { className: 'large' }, h('h1', null, '今天'), h('p', null, sub)),
+        h(FocusBar, props),
+        plan.capacityChange && h('p', { className: 'muted', style: { margin: '10px 4px 0' } }, `📊 ${plan.capacityChange}`),
+        h('div', { className: 'split' },
+          h('main', null,
+            h('h4', null, `三件必做${plan.workday ? '' : ' · 休息日不排工作'}`),
+            h('div', { className: 'group' }, plan.must.length
+              ? plan.must.map((t, i) => h(TaskRow, { key: t.id, t, index: i, act, isCurrent: plan.next?.taskId === t.id, open: openId === t.id, onToggle: () => toggle(t.id), onSwap: () => swap(t) }))
+              : h('div', { className: 'empty' }, '还没有任务。在下面说一句你想做的事。')),
+            plan.small.length > 0 && h(Fragment, null,
+              h('h4', null, '顺手做 · 20 分钟以内'),
+              h('div', { className: 'group' }, plan.small.map((t) => h('div', { key: t.id, className: 'rowi' },
+                h('button', { className: 'ck', 'aria-label': `完成：${t.title}`, onClick: () => act.patch(t.id, { status: 'done' }, '小任务 +1') }),
+                h('div', { className: 'grow' }, h('div', { className: 't' }, t.title), h('div', { className: 'm' }, `${TRACK[t.track]?.[1] ?? ''} ${TRACK[t.track]?.[0] ?? ''} · ${t.adjustedEstimate} 分钟`)),
+                h('button', { className: 'link', onClick: () => act.patch(t.id, { pinnedDate: true }, '已提为今日必做') }, '提为必做'))))),
+            plan.doneToday.length > 0 && h(Fragment, null,
+              h('h4', null, h('button', { className: 'disclose', 'aria-expanded': showDone, onClick: () => setShowDone(!showDone) }, `${showDone ? '▾' : '▸'} 今天已完成 ${plan.doneToday.length} 项`)),
+              showDone && h('div', { className: 'group' }, plan.doneToday.map((t) => h('div', { key: t.id, className: 'rowi' },
+                h('span', { className: 'ck on', 'aria-hidden': true }, '✓'),
+                h('div', { className: 'grow' }, h('div', { className: 't', style: { color: 'var(--muted)' } }, t.title), h('div', { className: 'm' }, `${t.actualMin} 分钟`)),
+                h('button', { className: 'link plain', onClick: () => act.patch(t.id, { status: 'todo' }) }, '撤销'))))),
+            h('h4', null, h('button', { className: 'disclose', 'aria-expanded': showBacklog, onClick: () => setShowBacklog(!showBacklog) }, `${showBacklog ? '▾' : '▸'} 任务池 ${plan.backlog.length}`)),
+            showBacklog && (plan.backlog.length
+              ? h('div', { className: 'group' }, plan.backlog.map((t) => h(TaskRow, { key: t.id, t, act, open: openId === t.id, onToggle: () => toggle(t.id) })))
+              : h('div', { className: 'muted', style: { padding: '0 4px' } }, '任务池是空的'))),
+          h('aside', null,
+            h('h4', null, '时间安排'),
+            h('div', { className: 'group' }, h(Timeline, { plan, now })),
+            h('p', { className: 'muted', style: { margin: '8px 4px 0', fontSize: 11.5 } }, '到点就只做这一件。'))),
+        h('div', { style: { height: 20 } }),
+        h(Dock, { ...props, act }))
     }
 
     // ———————————————— 灵感库 ————————————————
@@ -645,21 +850,17 @@ window.__ModuleLoader__.load({
       useEffect(() => { reload(); api('GET', '/status').then(setStatus).catch(() => {}) }, [reload])
       useEffect(() => { const t = setInterval(reload, 60000); return () => clearInterval(t) }, [reload])
       const shared = { plan, reload, notify, status, goSettings: () => setTab('settings') }
-      const tabs = [['today', '🎯 今日'], ['ideas', '💡 灵感库'], ['ws', '🗂 工作区'], ['coach', '🧭 教练'], ['growth', '📈 成长'], ['report', '📤 汇报'], ['settings', '⚙️ 设置']]
+      const tabs = [['today', '今日'], ['ideas', '灵感库'], ['ws', '工作区'], ['coach', '教练'], ['growth', '成长'], ['report', '汇报'], ['settings', '设置']]
+      const tabsView = { today: Today, ideas: Ideas, ws: Workspaces, coach: Coach, growth: Growth, report: Report, settings: Settings }
+      const View = tabsView[tab] ?? Today
       return h('div', { className: 'awb' }, h('style', null, css),
-        toast && h('div', { className: cx('toast', toast.err && 'err'), role: 'status' }, toast.text),
-        h('div', { className: 'row' }, h('h3', { className: 'grow' }, 'ADHD 工作台'),
-          plan && h('span', { className: 'muted' }, `${plan.date} · ${plan.workday ? '工作日' : '休息日'} · 今日专注 ${plan.stats.todayFocusMinutes} 分钟${plan.stats.streak ? ` · 🔥${plan.stats.streak} 天` : ''}`),
-          status && h('span', { className: 'badge', title: status.ai.available ? `${status.ai.provider}/${status.ai.model}` : '模型不可用，使用规则兜底' }, status.ai.available ? '🤖 AI 就绪' : '⚙️ 规则模式')),
-        plan && h(FocusBar, shared),
-        h('nav', { className: 'tabs', role: 'tablist' }, tabs.map(([id, label]) => h('button', { key: id, role: 'tab', 'aria-selected': tab === id, className: cx('tab', tab === id && 'on'), onClick: () => setTab(id) }, label))),
-        tab === 'today' && h(Today, shared),
-        tab === 'ideas' && h(Ideas, shared),
-        tab === 'ws' && h(Workspaces, shared),
-        tab === 'coach' && h(Coach, shared),
-        tab === 'growth' && h(Growth, shared),
-        tab === 'report' && h(Report, shared),
-        tab === 'settings' && h(Settings, shared))
+        toast && h('div', { className: cx('toast', toast.err && 'err'), role: 'status' }, h('span', null, toast.text)),
+        h('div', { className: 'topbar' },
+          h('nav', { className: 'tabs', role: 'tablist' }, tabs.map(([id, label]) => h('button', { key: id, role: 'tab', 'aria-selected': tab === id, className: cx('tab', tab === id && 'on'), onClick: () => setTab(id) }, label))),
+          h('span', { className: 'grow' }),
+          plan?.active && tab !== 'today' && h('button', { className: 'pill live', style: { border: 0, cursor: 'pointer' }, onClick: () => setTab('today') }, '● 专注中'),
+          status && h('span', { className: 'pill', title: status.ai.available ? `${status.ai.provider}/${status.ai.model}` : '模型不可用，使用规则兜底' }, status.ai.available ? 'AI 就绪' : '规则模式')),
+        tab === 'today' ? h(Today, shared) : h('div', { className: 'tabpage', style: { marginTop: 12 } }, h(View, shared)))
     }
 
     // 左侧栏图标（宿主传入 size）
