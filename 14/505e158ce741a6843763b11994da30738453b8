@@ -1,0 +1,22 @@
+lib/api.js
+  s_ad4c8a4643dfaa::t_d169697a547d4f 25,28-49
+test/api.test.js
+  s_ad4c8a4643dfaa::t_0c6e232a708954 9
+  s_ad4c8a4643dfaa::t_41065801b6d1ee 107-118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "14505e158ce741a6843763b11994da30738453b8",
+  "prompts": {},
+  "sessions": {
+    "s_ad4c8a4643dfaa": {
+      "agent_id": {
+        "tool": "deepseekharness",
+        "id": "session-df26e8c7-5718-4e87-81df-67640ccc8a54",
+        "model": "kr-claude-opus-5.5"
+      },
+      "human_author": "VitoBeijing <43870892+VitoBeijing@users.noreply.github.com>"
+    }
+  }
+}
