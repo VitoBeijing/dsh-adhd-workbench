@@ -8,7 +8,9 @@ window.__ModuleLoader__.load({
 
     // ———————————————— 工具 ————————————————
     async function api(method, path, body) {
-      const res = await fetch(API + path, { method, headers: body ? { 'content-type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined })
+      // 写请求一律带 JSON 请求头和请求体（DELETE 没参数也发 {}），服务端据此拒绝跨站表单请求
+      const write = method !== 'GET'
+      const res = await fetch(API + path, { method, headers: write ? { 'content-type': 'application/json' } : {}, body: write ? JSON.stringify(body ?? {}) : undefined })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.error || `请求失败 ${res.status}`)
       return data
