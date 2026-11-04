@@ -1,0 +1,24 @@
+test/routes.test.js
+  s_ad4c8a4643dfaa::t_814cab01e1ba04 1-109
+lib/api.js
+  s_ad4c8a4643dfaa::t_401ac51350b35d 15-17,19,22-28,30,32,358
+  s_ad4c8a4643dfaa::t_ea914856a807e3 20
+client/index.js
+  s_ad4c8a4643dfaa::t_ea914856a807e3 11-13
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.51-trip",
+  "base_commit_sha": "5cd629bda00929fdb00264a76bcca91d0579cab7",
+  "prompts": {},
+  "sessions": {
+    "s_ad4c8a4643dfaa": {
+      "agent_id": {
+        "tool": "deepseekharness",
+        "id": "session-df26e8c7-5718-4e87-81df-67640ccc8a54",
+        "model": "kr-claude-opus-5.5"
+      },
+      "human_author": "VitoBeijing <43870892+VitoBeijing@users.noreply.github.com>"
+    }
+  }
+}
