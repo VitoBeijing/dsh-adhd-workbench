@@ -17,6 +17,20 @@ DeepSeek Harness（DSH）插件：一个 ADHD 友好的个人任务工作台。�
 
 AI 功能使用 DSH 当前配置的模型（宿主进程内的 `llm` 服务），不需要另外配置密钥。模型不可用时，拆分、分类、教练和汇报都会退回规则模板，页面右上角显示「⚙️ 规则模式」。
 
+## 设计规范
+
+界面遵循 [Apple DESIGN.md](https://github.com/VoltAgent/awesome-design-md/blob/main/design-md/apple/DESIGN.md)（来自 [awesome-design-md](https://github.com/voltagent/awesome-design-md)），要点：
+
+- **只有一套强调色**：Action Blue `#0066cc` 用于所有可点的填充（按钮、选中态）；深色主题下文字链接才换成 Sky Link Blue `#2997ff`（白字填按钮在深色下对比度不够，所以按钮始终用 `#0066cc`）。键盘焦点用 `#0071e3`。
+- **SF Pro 字阶**：标题 ≥19px 用 SF Pro Display、字重 600、负字距；正文 17px / 行高 1.47 / `-0.374px`；说明 14px；细字 12px。字重只用 300 / 400 / 600 / 700，**没有 500**。
+- **圆角只有五档**：5 / 8 / 11 / 18 / 9999，按「小控件用 8、实用卡片用 18、动作和胶囊用 pill」分工，不混用中间值。
+- **克制的层次**：卡片靠底色变化和 1px 发丝线分层，按钮、标签、卡片都不加阴影；只有弹窗浮在页面上方时用一处柔和投影。
+- **不用装饰性渐变**：氛围来自材质而不是渐变。
+- **交互**：所有按钮按下统一 `transform: scale(.95)`；浮层（顶部栏、底部输入栏、弹窗、提示气泡）用 Parchment 80% + `backdrop-filter` 毛玻璃；尊重系统的「减少动效」设置。
+- **主题**：颜色用 `light-dark()`，跟随宿主 `color-scheme` 自动切换深浅；不支持背景模糊的浏览器退化为不透明底色。
+
+改样式后可跑 `npm test`，其中 `test/client.test.js` 会检查上面这些规则（强调色、字阶、圆角、按下缩放、无阴影、无装饰渐变），避免后续改动悄悄跑偏。
+
 ## 安装
 
 需要 DeepSeek Harness Desktop，以及 Node.js ≥ 22.15（读取 Codex 的 `.jsonl.zst` 文件要用到 `zlib.zstdDecompressSync`）。
