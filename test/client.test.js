@@ -116,7 +116,7 @@ test('工作区项目卡片：没有外边框，靠底色分层（深色下不�
   const css = src.slice(src.indexOf('const css = `'), src.indexOf('@media (prefers-reduced-motion'))
   const m = css.match(/\.awb \.ws\{([^}]*)\}/)
   assert.ok(m, '找不到 .ws 规则')
-  assert.doesNotMatch(m[1], /border/, '项目卡片不应再有外边框')
+  assert.doesNotMatch(m[1], /(^|;)\s*border\s*:/, '项目卡片不应再有外边框')
   assert.match(m[1], /background:var\(--pearl\)/, '去掉边框后要用 pearl 底色分层，否则深色下会和页面同色而消失')
   assert.match(m[1], /border-radius:var\(--r-lg\)/, '圆角保留')
 })
