@@ -1,0 +1,26 @@
+test/client.test.js
+  s_ad4c8a4643dfaa::t_a75df77087f7b1 59-61,63-66
+  s_ad4c8a4643dfaa::t_f2fd2e2de86ca9 56-58,62,67-87,96,102-104,109-110
+README.md
+  s_ad4c8a4643dfaa::t_7e47e7e7278680 20-33
+client/index.js
+  s_ad4c8a4643dfaa::t_460d5ae590c7af 74-75,78,123,146,150,158,211,303
+  s_ad4c8a4643dfaa::t_6a2b75055025bc 72-73,76-77,79-103,106-108,110-118,120-121,124-125,127-129,132-138,140-145,149,151-157,159-163,167,169-175,177-187,189,191,193-197,199-201,203-205,208-210,212-231,233-237,239-240,242-245,247-250,252-263,265-271,273-274,276-277,280-282,284-285,287-288,290-292,294-302,304-309,311-339,342,344-345
+  s_ad4c8a4643dfaa::t_f2fd2e2de86ca9 501
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.52-trip",
+  "base_commit_sha": "5eba8a42ab75c13fb32b596d296ef60f90c91d12",
+  "prompts": {},
+  "sessions": {
+    "s_ad4c8a4643dfaa": {
+      "agent_id": {
+        "tool": "deepseekharness",
+        "id": "session-df26e8c7-5718-4e87-81df-67640ccc8a54",
+        "model": "deepseek-v4.1-flash"
+      },
+      "human_author": "VitoBeijing <43870892+VitoBeijing@users.noreply.github.com>"
+    }
+  }
+}
