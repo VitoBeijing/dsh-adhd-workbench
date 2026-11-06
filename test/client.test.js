@@ -111,3 +111,14 @@ test('macOS 交互：按下缩放、选中项浮起、尊重减少动效偏好',
   assert.match(src, /@media \(prefers-reduced-motion:reduce\)/, '应尊重系统减少动效偏好')
   assert.match(css, /\.awb \.day\.over,\.awb \.unsch\.over\{[^}]*var\(--acc\)/, '拖动目标应有蓝色高亮')
 })
+
+test('工作区上下文圆环：没有灰色底圈，只留进度弧', () => {
+  const a = src.indexOf('function Ring(')
+  const b = src.indexOf('const Badge')
+  assert.ok(a > 0 && b > a, '找不到 Ring 组件')
+  const ring = src.slice(a, b)
+  assert.equal([...ring.matchAll(/h\('circle'/g)].length, 1, '圆环里只应有一个圆（进度弧线）')
+  assert.ok(!ring.includes('strokeOpacity'), '不应再有半透明灰色底圈')
+  assert.match(ring, /role: 'img'/, '仍要有读屏标签')
+  assert.match(ring, /'aria-label'/, '仍要能读出百分比')
+})

@@ -353,8 +353,8 @@ window.__ModuleLoader__.load({
     function Ring({ pct, size = 54 }) {
       const r = (size - 8) / 2, c = 2 * Math.PI * r, v = pct == null ? 0 : Math.min(100, pct)
       const color = v >= 80 ? '#e5534b' : v >= 60 ? '#e8a33d' : '#2fb67c'
+      // 只画进度弧线，不再画外面那圈半透明底圈
       return h('svg', { className: 'ring', width: size, height: size, viewBox: `0 0 ${size} ${size}`, role: 'img', 'aria-label': pct == null ? '上下文未知' : `上下文已用 ${v}%` },
-        h('circle', { cx: size / 2, cy: size / 2, r, fill: 'none', stroke: 'currentColor', strokeOpacity: 0.12, strokeWidth: 6 }),
         h('circle', { cx: size / 2, cy: size / 2, r, fill: 'none', stroke: color, strokeWidth: 6, strokeLinecap: 'round', strokeDasharray: `${(c * v) / 100} ${c}`, transform: `rotate(-90 ${size / 2} ${size / 2})`, style: { transition: 'stroke-dasharray .4s' } }),
         h('text', { x: '50%', y: '50%', dominantBaseline: 'central', textAnchor: 'middle', fontSize: size * 0.24, fill: 'currentColor' }, pct == null ? '—' : `${Math.round(v)}%`))
     }
