@@ -246,7 +246,7 @@ window.__ModuleLoader__.load({
 .awb .small{display:grid;gap:4px}
 .awb .small .it{display:flex;gap:8px;align-items:center;padding:8px 12px;border-radius:var(--r-sm);background:var(--canvas);border:1px solid var(--divider);font-size:14px;letter-spacing:-.224px}
 .awb .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:17px}
-.awb .ws{border:1px solid var(--hairline);background:var(--canvas);border-radius:var(--r-lg);padding:17px;margin-bottom:17px}
+.awb .ws{background:var(--pearl);border-radius:var(--r-lg);padding:17px;margin-bottom:17px}
 .awb .sess{display:flex;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--divider);font-size:14px;letter-spacing:-.224px}
 .awb .sess:first-of-type{border-top:0}
 .awb .dot{width:8px;height:8px;border-radius:var(--r-pill);display:inline-block;background:var(--ink-muted)}.awb .dot.running{background:var(--ok)}

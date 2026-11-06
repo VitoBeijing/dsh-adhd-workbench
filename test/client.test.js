@@ -111,3 +111,12 @@ test('macOS 交互：按下缩放、选中项浮起、尊重减少动效偏好',
   assert.match(src, /@media \(prefers-reduced-motion:reduce\)/, '应尊重系统减少动效偏好')
   assert.match(css, /\.awb \.day\.over,\.awb \.unsch\.over\{[^}]*var\(--acc\)/, '拖动目标应有蓝色高亮')
 })
+
+test('工作区项目卡片：没有外边框，靠底色分层（深色下不能和页面同色）', () => {
+  const css = src.slice(src.indexOf('const css = `'), src.indexOf('@media (prefers-reduced-motion'))
+  const m = css.match(/\.awb \.ws\{([^}]*)\}/)
+  assert.ok(m, '找不到 .ws 规则')
+  assert.doesNotMatch(m[1], /border/, '项目卡片不应再有外边框')
+  assert.match(m[1], /background:var\(--pearl\)/, '去掉边框后要用 pearl 底色分层，否则深色下会和页面同色而消失')
+  assert.match(m[1], /border-radius:var\(--r-lg\)/, '圆角保留')
+})
