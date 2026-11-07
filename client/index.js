@@ -275,7 +275,8 @@ window.__ModuleLoader__.load({
 .awb .toast.err>span{color:var(--bad)}
 @keyframes awbpop{0%{transform:translateY(-6px) scale(.98);opacity:0}100%{transform:none;opacity:1}}
 .awb pre.md{white-space:pre-wrap;font-size:14px;max-height:340px;overflow:auto;padding:17px;border-radius:var(--r-sm);background:var(--parchment)}
-.awb .ring text{font-weight:600}
+.awb .awb-ring{box-shadow:none;border:0;background:none}
+.awb .awb-ring text{font-weight:600}
 .awb .intake .chat{max-height:300px;overflow:auto}
 .awb .src{margin-bottom:24px}
 .awb .src>.hd{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--hairline);margin-bottom:12px;cursor:pointer}
@@ -353,7 +354,7 @@ window.__ModuleLoader__.load({
     function Ring({ pct, size = 54 }) {
       const r = (size - 8) / 2, c = 2 * Math.PI * r, v = pct == null ? 0 : Math.min(100, pct)
       const color = v >= 80 ? '#e5534b' : v >= 60 ? '#e8a33d' : '#2fb67c'
-      return h('svg', { className: 'ring', width: size, height: size, viewBox: `0 0 ${size} ${size}`, role: 'img', 'aria-label': pct == null ? '上下文未知' : `上下文已用 ${v}%` },
+      return h('svg', { className: 'awb-ring', width: size, height: size, viewBox: `0 0 ${size} ${size}`, role: 'img', 'aria-label': pct == null ? '上下文未知' : `上下文已用 ${v}%` },
         h('circle', { cx: size / 2, cy: size / 2, r, fill: 'none', stroke: 'currentColor', strokeOpacity: 0.12, strokeWidth: 6 }),
         h('circle', { cx: size / 2, cy: size / 2, r, fill: 'none', stroke: color, strokeWidth: 6, strokeLinecap: 'round', strokeDasharray: `${(c * v) / 100} ${c}`, transform: `rotate(-90 ${size / 2} ${size / 2})`, style: { transition: 'stroke-dasharray .4s' } }),
         h('text', { x: '50%', y: '50%', dominantBaseline: 'central', textAnchor: 'middle', fontSize: size * 0.24, fill: 'currentColor' }, pct == null ? '—' : `${Math.round(v)}%`))

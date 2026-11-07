@@ -120,3 +120,12 @@ test('工作区项目卡片：没有外边框，靠底色分层（深色下不�
   assert.match(m[1], /background:var\(--pearl\)/, '去掉边框后要用 pearl 底色分层，否则深色下会和页面同色而消失')
   assert.match(m[1], /border-radius:var\(--r-lg\)/, '圆角保留')
 })
+
+test('上下文圆环：不用裸 ring 类名，且显式关掉 box-shadow', () => {
+  const css = src.slice(src.indexOf('const css = `'), src.indexOf('@media (prefers-reduced-motion'))
+  // 宿主的 dsh-context 打包了 Tailwind，全局有 .ring{box-shadow:...}；用裸 ring 会被套一圈阴影
+  assert.match(src, /className: 'awb-ring'/, '圆环类名要带前缀，避开宿主 Tailwind 的 .ring')
+  assert.doesNotMatch(src, /className: 'ring'/, '不能再用裸 ring 类名')
+  assert.match(css, /\.awb \.awb-ring\{box-shadow:none/, '圆环要显式关掉阴影兜底')
+  assert.match(css, /\.awb \.awb-ring text\{font-weight:600\}/, '百分比文字样式要跟着改名')
+})

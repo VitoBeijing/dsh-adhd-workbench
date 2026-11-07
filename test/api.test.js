@@ -44,9 +44,16 @@ test('task lifecycle: create → split → focus → steps → done → report',
   const ids = []
   for (const [i, title] of titles.entries()) ids.push((await call('POST', '/tasks', { title, track: i === 2 ? 'growth' : 'work', importance: 3 - (i % 3), estimateMin: i === 3 ? 10 : 40 })).task.id)
   const plan = await call('GET', '/plan')
-  assert.equal(plan.must.length, 3)
-  if (plan.workday) assert.ok(plan.must.some((t) => t.track === 'growth'), '工作日必做里至少一个成长任务')
-  assert.ok(plan.small.some((t) => t.title === '回复邮件'))
+  // 休息日（周六周日）不排工作，必做里只会剩成长任务，所以分情况断言，避免测试依赖运行日期
+  if (plan.workday) {
+    assert.equal(plan.must.length, 3)
+    assert.ok(plan.must.some((t) => t.track === 'growth'), '工作日必做里至少一个成长任务')
+    assert.ok(plan.small.some((t) => t.title === '回复邮件'))
+  } else {
+    assert.equal(plan.must.length, 1, '休息日只排成长任务')
+    assert.equal(plan.must[0].track, 'growth')
+    assert.ok(!plan.small.some((t) => t.track === 'work'), '休息日不把小工作排进来')
+  }
   const split = await call('POST', `/tasks/${ids[0]}/split`, {})
   assert.equal(split.source, 'ai'); assert.equal(split.task.steps.length, 2); assert.equal(split.task.reportPoint, '完成初稿')
   await call('POST', `/tasks/${ids[0]}/focus`, { action: 'start' })
