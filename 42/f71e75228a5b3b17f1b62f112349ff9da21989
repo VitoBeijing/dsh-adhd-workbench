@@ -1,0 +1,23 @@
+client/index.js
+  s_ad4c8a4643dfaa::t_fe24771abfb172 278-279,357
+test/api.test.js
+  s_ad4c8a4643dfaa::t_35aa31fbc46b53 47-56
+test/client.test.js
+  s_ad4c8a4643dfaa::t_a92b8b6577bf00 123-131
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.52-trip",
+  "base_commit_sha": "42f71e75228a5b3b17f1b62f112349ff9da21989",
+  "prompts": {},
+  "sessions": {
+    "s_ad4c8a4643dfaa": {
+      "agent_id": {
+        "tool": "deepseekharness",
+        "id": "session-df26e8c7-5718-4e87-81df-67640ccc8a54",
+        "model": "deepseek-v4.1-flash"
+      },
+      "human_author": "VitoBeijing <43870892+VitoBeijing@users.noreply.github.com>"
+    }
+  }
+}
