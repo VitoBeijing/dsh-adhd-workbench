@@ -15,8 +15,8 @@ window.__ModuleLoader__.load({
       if (!res.ok) throw new Error(data.error || `请求失败 ${res.status}`)
       return data
     }
-    const TRACK = { work: ['工作', '💼'], growth: ['成长', '🌱'], life: ['生活', '🏠'] }
-    const IDEA_CAT = { personal: ['个人', '🧠'], work: ['工作', '💼'], life: ['生活', '🌿'] }
+    const TRACK = { work: ['工作'], growth: ['成长'], life: ['生活'] }
+    const IDEA_CAT = { personal: ['个人'], work: ['工作'], life: ['生活'] }
     const fmtClock = (ms) => { const s = Math.max(0, Math.floor(ms / 1000)); return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}` }
     const ago = (t) => { if (!t) return ''; const m = Math.round((Date.now() - t) / 60000); return m < 1 ? '刚刚' : m < 60 ? `${m} 分钟前` : m < 1440 ? `${Math.round(m / 60)} 小时前` : `${Math.round(m / 1440)} 天前` }
     const cx = (...xs) => xs.filter(Boolean).join(' ')
@@ -69,281 +69,321 @@ window.__ModuleLoader__.load({
     }
 
     const css = `
-/* Apple DESIGN.md：单一 Action Blue、SF Pro 字阶、极简阴影、pill 动作、scale(.95) 按下 */
+/* Hallmark · shape: app screen · genre: playful · theme: Hum (deal 5/5, seed adhd-friendly-personal-task-workbench-3de1·ff8c2f10·2026-11-07·r0, reroll 4) · redesign: full
+ * nav: kept（宿主侧栏 + 顶部页签） · signature: kept（「现在只做这一步」专注面板） · states: full/empty（loading、error 沿用 toast） · hum: light
+ * axes: light/rounded-sans/chromatic-yellow · posture: full-palette · contrast: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S5 R3 V5 · weakest: R，spring 动效和撕边在工具界面有过度装饰风险；spring 只给主按钮，撕边只给 hero 和 modal，其余全用规整圆角 */
+/* Hallmark · waive 12 · spring 仅用于 .btn.pri 与 .send 的 transition-timing-function · Hum 主题 Motion 节声明 spring 是主控件材料特性 */
+/* Hallmark · answered F4 · .seg button.on 是 Hum 的「chosen pill is ink with paper type」，非 primary action；主按钮仅 .btn.pri（pear） */
+/* Hallmark · dismissed 72 · .paper 与 .hours 是带底色的信息块，padding 已按 max(8px, 0.5em) 收紧到 8px 下限之上 */
+/* Hallmark · dropped emoji 图标（TRACK/IDEA_CAT 的 💼🌱🏠🧠🌿、按钮上的 ▶✂️＋ 等 11 处） · Floor 30a：图标改由 CSS 色条、SVG 对勾与文字承担 */
+/* Hallmark · answered F7 · 12 处 pill 圆角全是圆形控件与指示件：复选钮 .ck、序号圆 .lead、进度条 .prog/.bar、滚动条 thumb、toast 气泡、章标 .mdone，无一方盒容器 */
+@import url("https://api.fontshare.com/v2/css?f[]=chillax@500,600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500&display=swap");
+:root{
+  /* —— Hum tokens（:root，Gate 48） —— */
+  --color-paper:oklch(97% .012 95);
+  --color-paper-2:oklch(94.5% .018 95);
+  --color-paper-3:oklch(91% .022 95);
+  --color-canvas:oklch(98.8% .007 95);
+  --color-ink:oklch(20% .014 255);
+  --color-ink-2:oklch(29% .014 255);
+  --color-muted:oklch(47% .014 255);
+  --color-rule:oklch(87% .016 95);
+  --color-rule-2:oklch(91% .013 95);
+  --color-accent:oklch(87% .175 96);
+  --color-accent-deep:oklch(72% .16 92);
+  --color-accent-ink:oklch(20% .014 255);
+  --color-accent-soft:oklch(93% .06 96);
+  --color-blue:oklch(50% .17 250);
+  --color-coral:oklch(70% .2 22);
+  --color-mint:oklch(82% .15 152);
+  --color-mint-deep:oklch(48% .12 155);
+  --color-focus:oklch(50% .17 250);
+  --color-warn:oklch(45% .09 80);
+  --color-edge:oklch(83% .04 88);
+  --color-fringe:oklch(99.2% .006 95);
+  --color-overlay:oklch(20% .014 255 / .3);
+  --growth:var(--color-mint-deep);
+  --life:var(--color-coral);
+  /* 圆角四档（Hum：14 输入 / 16 卡片 / 24 表面 / 999 标签） */
+  --r-xs:8px;--r-sm:14px;--r-lg:16px;--r-xl:24px;--r-pill:999px;
+  --font-display:"Chillax",ui-rounded,"Hiragino Maru Gothic ProN","PingFang SC",sans-serif;
+  --font-body:var(--font-display);
+  --font-outlier:"Geist Mono",ui-monospace,"SF Mono",monospace;
+  --texture-opacity:.06;
+  --ease-spring:cubic-bezier(.34,1.56,.64,1);
+  --ease-snap:cubic-bezier(.22,1,.36,1);
+  --shadow-paper:drop-shadow(0 0 .6px oklch(20% .014 255 / .32)) drop-shadow(1.5px 2.5px 1.5px oklch(20% .014 255 / .1)) drop-shadow(6px 14px 16px oklch(20% .014 255 / .13));
+}
 .awb{
-  --acc:#0066cc;                                /* Action Blue：所有可点的填充色 */
-  --acc-link:light-dark(#0066cc,#2997ff);       /* 文字链接：深色用 Sky Link Blue */
-  --acc-focus:light-dark(#0071e3,#4da3ff);      /* Focus Blue */
-  --ink:light-dark(#1d1d1f,#f5f5f7);
-  --ink-muted:light-dark(#6e6e73,#a1a1a6);      /* 次要文字：保证 4.5:1 */
-  --hairline:light-dark(#e0e0e0,#3a3a3c);
-  --divider:light-dark(#f0f0f0,#2c2c2e);
-  --canvas:light-dark(#fff,#1c1c1e);
-  --parchment:light-dark(#f5f5f7,#202022);
-  --pearl:light-dark(#fafafc,#2a2a2c);
-  --ok:light-dark(#248a3d,#30d158);
-  --warn:light-dark(#c93400,#ff9f0a);
-  --bad:light-dark(#d70015,#ff453a);
-  --growth:light-dark(#248a3d,#30d158);
-  --life:light-dark(#c93400,#ff9f0a);
-  /* 圆角只有 5 / 8 / 11 / 18 / pill 五档 */
-  --r-xs:5px;--r-sm:8px;--r-md:11px;--r-lg:18px;--r-pill:9999px;
-  --font-display:"SF Pro Display",system-ui,-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
-  --font-text:"SF Pro Text",system-ui,-apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;
-  /* 浮层：Parchment 80% + 背景模糊（规范里 sub-nav / floating bar 的做法） */
-  --frosted:color-mix(in srgb,var(--parchment) 80%,transparent);
-  --blur:saturate(180%) blur(20px);
-  --ease:cubic-bezier(.32,.72,0,1);
-  height:100%;overflow:auto;padding:0 24px;box-sizing:border-box;color:var(--ink);
-  font-family:var(--font-text);font-size:17px;line-height:1.47;letter-spacing:-.374px;
-  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;container-type:inline-size;
-  scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--ink) 20%,transparent) transparent}
+  height:100%;overflow:auto;padding:0 24px;box-sizing:border-box;color:var(--color-ink);
+  font-family:var(--font-body);font-size:14px;line-height:1.5;letter-spacing:-.01em;
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;container-type:inline-size;caret-color:var(--color-accent);
+  scrollbar-width:thin;scrollbar-color:color-mix(in srgb,var(--color-ink) 22%,transparent) transparent;
+  background:var(--color-paper)}
+.awb::selection,.awb *::selection{background:color-mix(in srgb,var(--color-accent) 24%,transparent)}
 .awb::-webkit-scrollbar{width:11px;height:11px}
-.awb::-webkit-scrollbar-thumb{border-radius:var(--r-pill);border:3px solid transparent;background-clip:content-box;background-color:color-mix(in srgb,var(--ink) 20%,transparent)}
-.awb::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--ink) 32%,transparent)}
+.awb::-webkit-scrollbar-thumb{border-radius:var(--r-pill);border:3px solid transparent;background-clip:content-box;background-color:color-mix(in srgb,var(--color-ink) 22%,transparent)}
+.awb::-webkit-scrollbar-thumb:hover{background-color:color-mix(in srgb,var(--color-ink) 34%,transparent)}
 .awb>*{flex-shrink:0}
 .awb *{box-sizing:border-box}.awb h1,.awb h2,.awb h3,.awb h4,.awb p{margin:0}
-.awb h3{font-family:var(--font-display);font-size:21px;font-weight:600;line-height:1.19;letter-spacing:.231px}
-.awb h4{font-family:var(--font-text);font-size:14px;font-weight:600;line-height:1.29;letter-spacing:-.224px;color:var(--ink-muted);margin:32px 4px 12px}
-.awb .muted{color:var(--ink-muted);font-size:14px;letter-spacing:-.224px}
+.awb h1,.awb h2,.awb h3{font-family:var(--font-display);font-weight:600;letter-spacing:-.03em;line-height:1.04;text-wrap:balance;overflow-wrap:break-word;min-width:0}
+.awb h3{font-size:19px;font-weight:600}
+.awb h4{font-family:var(--font-body);font-size:11.5px;font-weight:500;line-height:1.3;color:var(--color-muted);margin:32px 4px 12px}
+.awb .muted{color:var(--color-muted);font-size:11.5px}
 .awb button,.awb input,.awb select,.awb textarea{font:inherit;color:inherit}
-.awb button:focus-visible,.awb input:focus-visible,.awb select:focus-visible,.awb textarea:focus-visible,[role=button]:focus-visible{outline:2px solid var(--acc-focus);outline-offset:2px}
-/* —— 按钮：pill 为主，按下 scale(.95)，无阴影 —— */
-.awb .btn{appearance:none;border:1px solid transparent;background:var(--parchment);border-radius:var(--r-pill);padding:8px 15px;cursor:pointer;
-  font-size:14px;font-weight:400;letter-spacing:-.224px;white-space:nowrap;
-  transition:background .2s var(--ease),transform .15s var(--ease),border-color .2s}
-.awb .btn:hover:not(:disabled){background:color-mix(in srgb,var(--ink) 8%,var(--parchment))}
-.awb .btn:active:not(:disabled){transform:scale(.95)}
-.awb .btn:disabled{opacity:.42;cursor:default}
-.awb .btn.pri{background:var(--acc);color:#fff;border-color:transparent}
-.awb .btn.pri:hover:not(:disabled){background:color-mix(in srgb,var(--acc) 88%,#000)}
-.awb .btn.ghost{background:transparent;border-color:var(--hairline)}
-.awb .btn.ghost:hover:not(:disabled){background:color-mix(in srgb,var(--ink) 5%,transparent)}
-.awb .btn.danger{color:var(--bad)}
-.awb .link{appearance:none;border:0;background:none;padding:2px 0;color:var(--acc-link);cursor:pointer;font-size:14px;font-weight:400;letter-spacing:-.224px;transition:opacity .2s}
-.awb .link:hover{opacity:.68}
-.awb .link.danger{color:var(--bad)}.awb .link.plain{color:var(--ink-muted)}
-.awb .link:disabled{opacity:.4;cursor:default}
-.awb .in{border:1px solid var(--hairline);background:var(--canvas);border-radius:var(--r-sm);padding:8px 12px;min-width:0;outline:none;
-  font-size:14px;letter-spacing:-.224px;transition:border-color .2s,box-shadow .2s}
-.awb .in:focus{border-color:var(--acc-focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc-focus) 22%,transparent)}
+.awb button:focus-visible,.awb input:focus-visible,.awb select:focus-visible,.awb textarea:focus-visible,[role=button]:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}
+/* —— 按钮：模压塑料感 = 1px 顶高光 + 底部实边，按下下沉 2px（Dose 的 moulded control） —— */
+.awb .btn{--edge:3px;appearance:none;border:0;background:transparent;border-radius:var(--r-sm);padding:8px 16px;cursor:pointer;
+  font-size:11.5px;font-weight:600;white-space:nowrap;
+  box-shadow:inset 0 0 0 1px var(--color-rule),0 var(--edge) 0 0 var(--color-edge);
+  transition:translate .12s var(--ease-snap),box-shadow .12s var(--ease-snap)}
+.awb .btn:hover:not(:disabled){--edge:6px;translate:0 -2px}
+.awb .btn:active:not(:disabled){--edge:1px;translate:0 3px}
+.awb .btn:disabled{opacity:.45;cursor:not-allowed;--edge:2px;box-shadow:inset 0 0 0 1px var(--color-rule),0 var(--edge) 0 0 var(--color-edge)}
+.awb .btn.pri{background:var(--color-accent);color:var(--color-accent-ink);box-shadow:0 var(--edge) 0 0 var(--color-accent-deep),2px calc(var(--edge) + 4px) 10px -3px color-mix(in oklab,var(--color-ink) 32%,transparent);transition-timing-function:var(--ease-spring)}
+.awb .btn.pri:hover:not(:disabled){--edge:6px;translate:0 -2px}
+.awb .btn.pri:active:not(:disabled){--edge:1px;translate:0 3px}
+.awb .btn.ghost{background:transparent;box-shadow:inset 0 0 0 1px var(--color-rule)}
+.awb .btn.ghost:hover:not(:disabled){box-shadow:inset 0 0 0 1px var(--color-muted)}
+.awb .btn.ghost:active:not(:disabled){--edge:1px;translate:0 1px}
+.awb .btn.danger{color:var(--color-warn)}
+.awb .link{appearance:none;border:0;background:none;padding:2px 0;color:var(--color-blue);cursor:pointer;font-size:11.5px;font-weight:500;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:.16em;text-decoration-color:transparent;transition:text-decoration-color .12s}
+.awb .link:hover{text-decoration-color:var(--color-blue)}
+.awb .link.danger{color:var(--color-warn)}.awb .link.plain{color:var(--color-muted)}
+.awb .link:disabled{opacity:.45;cursor:not-allowed}
+.awb .in{border:1px solid var(--color-rule);background:var(--color-canvas);border-radius:var(--r-sm);padding:8px 12px;min-width:0;outline:none;
+  font-size:11.5px;transition:border-color .12s var(--ease),box-shadow .12s var(--ease)}
+.awb .in:focus{border-color:var(--color-focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--color-focus) 22%,transparent)}
+.awb .in:disabled{opacity:.45;cursor:not-allowed}
 .awb textarea.in{width:100%;resize:vertical}
 .awb .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.awb .grow{flex:1;min-width:0}
-.awb .card{border-radius:var(--r-lg);padding:24px;background:var(--canvas);border:1px solid var(--hairline)}
-/* —— 顶部玻璃栏（规范：Parchment 80% + 模糊，唯一允许的"浮"效果） —— */
+.awb .card{border-radius:var(--r-lg);padding:24px;background:var(--color-canvas);box-shadow:inset 0 0 0 1px var(--color-rule)}
+/* —— 顶部玻璃栏（保留的浮层：暖纸 88% + 模糊） —— */
 .awb .topbar{position:sticky;top:0;z-index:7;display:flex;gap:12px;align-items:center;margin:0 -24px 4px;padding:12px 24px;
-  background:var(--frosted);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
-  border-bottom:1px solid var(--divider)}
-.awb .tabs{display:inline-flex;gap:2px;padding:2px;border-radius:var(--r-md);overflow-x:auto;max-width:100%;scrollbar-width:none;
-  background:color-mix(in srgb,var(--ink) 6%,transparent)}
+  background:var(--color-paper-2);box-shadow:0 1px 0 var(--color-rule)}
+.awb .tabs{display:inline-flex;gap:2px;padding:2px;border-radius:var(--r-lg);overflow-x:auto;max-width:100%;scrollbar-width:none;
+  background:color-mix(in srgb,var(--color-ink) 6%,transparent)}
 .awb .tabs::-webkit-scrollbar{display:none}
-.awb .tab{border:0;background:none;padding:5px 12px;border-radius:var(--r-sm);cursor:pointer;color:var(--ink-muted);font-weight:400;font-size:14px;letter-spacing:-.224px;white-space:nowrap;
-  transition:background .22s var(--ease),color .22s,transform .15s var(--ease)}
-.awb .tab:hover:not(.on){color:var(--ink)}
-.awb .tab:active{transform:scale(.95)}
-.awb .tab.on{color:var(--ink);background:var(--canvas);border:1px solid var(--divider)}
-.awb .badge{display:inline-flex;align-items:center;gap:3px;border-radius:var(--r-xs);padding:1px 6px;font-size:12px;font-weight:400;letter-spacing:-.12px;background:color-mix(in srgb,var(--ink) 7%,transparent)}
-.awb .badge.work{color:var(--acc-link);background:color-mix(in srgb,var(--acc) 10%,transparent)}
-.awb .badge.growth{color:var(--growth);background:color-mix(in srgb,var(--growth) 12%,transparent)}
-.awb .badge.life{color:var(--life);background:color-mix(in srgb,var(--life) 12%,transparent)}
-.awb .pill{display:inline-flex;align-items:center;gap:6px;border-radius:var(--r-pill);padding:3px 11px;font-size:12px;font-weight:400;letter-spacing:-.12px;background:color-mix(in srgb,var(--ink) 7%,transparent)}
-.awb .pill.live{color:var(--acc-link);background:color-mix(in srgb,var(--acc) 10%,transparent)}
-/* —— 大标题：SF Pro Display 34/600，负字距 —— */
-.awb .large{margin:24px 0 24px}
-.awb .large h1{font-family:var(--font-display);font-size:34px;font-weight:600;line-height:1.1;letter-spacing:-.374px}
-.awb .large p{color:var(--ink-muted);font-size:17px;letter-spacing:-.374px;margin-top:4px}
-/* —— 现在只做这一步：靠底色区分层级，不用渐变 —— */
-.awb .hero{position:relative;border-radius:var(--r-lg);padding:24px 24px 20px;overflow:hidden;
-  background:var(--parchment);border:1px solid var(--divider)}
-.awb .hero .eyebrow{font-size:12px;font-weight:600;letter-spacing:-.12px;color:var(--acc-link)}
-.awb .hero .title{font-family:var(--font-display);font-size:24px;font-weight:600;line-height:1.19;letter-spacing:-.3px;margin:8px 0 4px}
-.awb .hero .sub{color:var(--ink-muted);font-size:14px;letter-spacing:-.224px}
+.awb .tab{border:0;background:none;padding:8px 12px;border-radius:var(--r-pill);cursor:pointer;color:var(--color-muted);font-weight:500;font-size:11.5px;white-space:nowrap;
+  transition:background .12s var(--ease),color .12s,transform .12s var(--ease)}
+.awb .tab:hover:not(.on){color:var(--color-ink)}
+.awb .tab:active{transform:translateY(1px)}
+.awb .tab.on{color:var(--color-ink);background:var(--color-accent-soft)}
+/* —— 轨道徽章：透明塑料片，左侧色条承重 —— */
+.awb .badge{display:inline-flex;align-items:center;gap:4px;border-radius:var(--r-pill);padding:2px 8px;font-size:10px;font-weight:600;
+  color:var(--color-ink-2);background:var(--color-accent-soft)}
+.awb .badge.growth{background:color-mix(in srgb,var(--color-mint) 40%,transparent);color:var(--color-mint-deep)}
+.awb .badge.life{background:color-mix(in srgb,var(--color-coral) 18%,transparent);color:var(--color-coral)}
+.awb .pill{display:inline-flex;align-items:center;gap:8px;border-radius:var(--r-pill);padding:4px 12px;font-size:10px;font-weight:500;background:color-mix(in srgb,var(--color-ink) 7%,transparent)}
+.awb .pill.live{color:var(--color-accent-ink);background:var(--color-accent);box-shadow:0 2px 0 0 var(--color-accent-deep)}
+/* —— 大标题：Chillax 600，负字距 —— */
+.awb .large{margin:24px 0}
+.awb .large h1{font-size:32px}
+.awb .large p{color:var(--color-muted);font-size:14px;margin-top:4px}
+/* —— 现在只做这一步：应用本身的签名面板，靠底色分层 —— */
+.awb .hero{position:relative;border-radius:var(--r-xl);padding:24px;overflow:hidden;
+  background:var(--color-paper-2);box-shadow:inset 0 0 0 1px var(--color-rule)}
+.awb .hero .eyebrow{font-size:10px;font-weight:500;color:var(--color-muted)}
+.awb .hero .title{font-family:var(--font-display);font-size:22px;font-weight:600;letter-spacing:-.03em;line-height:1.02;margin:8px 0 4px;text-wrap:balance;overflow-wrap:break-word;min-width:0}
+.awb .hero .sub{color:var(--color-muted);font-size:11.5px}
 .awb .hero .acts{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px;align-items:center}
-.awb .hero .btn{padding:11px 22px;font-size:17px;letter-spacing:-.374px}
-.awb .clock{font-family:var(--font-display);font-variant-numeric:tabular-nums;font-size:40px;font-weight:300;letter-spacing:-.4px;line-height:1.1}
-.awb .clock.over{color:var(--warn)}
+.awb .hero .btn{padding:12px 24px;font-size:13px}
+.awb .clock{font-family:var(--font-outlier);font-variant-numeric:tabular-nums;font-size:38px;font-weight:500;line-height:1.05;color:var(--color-ink)}
+.awb .clock.over{color:var(--color-warn)}
 /* —— 今日布局：主列 + 窄时间线 —— */
 .awb .today{flex:1 0 auto;display:flex;flex-direction:column}
 .awb .split{display:grid;grid-template-columns:minmax(0,1fr);gap:0 32px}
 @container (min-width:860px){.awb .split{grid-template-columns:minmax(0,1fr) 260px}.awb .split>aside{position:sticky;top:64px;align-self:start}}
-/* 分组列表：实用卡片，18px 圆角 + 1px 发丝线 */
-.awb .group{border-radius:var(--r-lg);background:var(--canvas);border:1px solid var(--hairline);overflow:hidden}
-.awb .rowi{display:flex;gap:12px;align-items:center;padding:12px 17px;position:relative;cursor:default;transition:background .2s var(--ease)}
-.awb .group>*+*{border-top:1px solid var(--divider)}
-.awb .rowi.click{cursor:pointer}.awb .rowi.click:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
-.awb .rowi .t{font-size:17px;font-weight:600;line-height:1.24;letter-spacing:-.374px;overflow:hidden;text-overflow:ellipsis}
-.awb .rowi .m{color:var(--ink-muted);font-size:14px;letter-spacing:-.224px;margin-top:2px}
-.awb .rowi.cur{background:color-mix(in srgb,var(--acc) 6%,transparent)}
-.awb .chev{color:var(--ink-muted);font-size:14px;transition:transform .24s var(--ease);flex:none}.awb .chev.open{transform:rotate(90deg)}
-.awb .lead{width:24px;height:24px;border-radius:var(--r-pill);display:grid;place-items:center;font-size:12px;font-weight:600;flex:none;
-  background:color-mix(in srgb,var(--ink) 7%,transparent);color:var(--ink-muted)}
-.awb .rowi.cur .lead{background:var(--acc);color:#fff}
-.awb .ck{appearance:none;width:24px;height:24px;border-radius:var(--r-pill);border:1px solid var(--ink-muted);background:none;flex:none;cursor:pointer;
-  display:grid;place-items:center;padding:0;color:#fff;font-size:12px;transition:background .2s var(--ease),border-color .2s,transform .15s var(--ease)}
-.awb .ck:hover{border-color:var(--acc)}.awb .ck:active{transform:scale(.95)}
-.awb .ck.on{background:var(--ok);border-color:var(--ok)}
-.awb .prog{height:3px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--ink) 10%,transparent);overflow:hidden;margin-top:8px}
-.awb .prog>i{display:block;height:100%;background:var(--acc);border-radius:var(--r-pill);transition:width .45s var(--ease)}
-.awb .detail{padding:2px 17px 12px 53px;background:color-mix(in srgb,var(--ink) 2%,transparent)}
+/* 分组列表：canvas 纸面 + 发丝线 */
+.awb .group{border-radius:var(--r-lg);background:var(--color-canvas);box-shadow:inset 0 0 0 1px var(--color-rule);overflow:hidden}
+.awb .rowi{display:flex;gap:12px;align-items:center;padding:12px 16px;position:relative;cursor:default;transition:background .12s var(--ease)}
+.awb .group>*+*{border-top:1px solid var(--color-rule-2)}
+.awb .rowi.click{cursor:pointer}.awb .rowi.click:hover{background:color-mix(in srgb,var(--color-ink) 4%,transparent)}
+.awb .rowi .t{font-size:14px;font-weight:500;line-height:1.25;overflow:hidden;text-overflow:ellipsis}
+.awb .rowi .m{color:var(--color-muted);font-size:11.5px;margin-top:2px}
+.awb .rowi.cur{background:var(--color-accent-soft)}
+.awb .chev{color:var(--color-muted);font-size:11.5px;transition:transform .22s var(--ease);flex:none}.awb .chev.open{transform:rotate(90deg)}
+.awb .lead{width:24px;height:24px;border-radius:var(--r-pill);display:grid;place-items:center;font-size:10px;font-weight:500;flex:none;
+  background:color-mix(in srgb,var(--color-ink) 7%,transparent);color:var(--color-muted)}
+.awb .rowi.cur .lead{background:var(--color-accent);color:var(--color-accent-ink);box-shadow:0 2px 0 0 var(--color-accent-deep)}
+.awb .ck{appearance:none;width:24px;height:24px;border-radius:var(--r-pill);border:2px solid var(--color-muted);background:none;flex:none;cursor:pointer;
+  display:grid;place-items:center;padding:0;color:var(--color-accent-ink);font-size:10px;font-weight:600;transition:background .12s var(--ease-snap),border-color .12s,transform .12s var(--ease-snap)}
+.awb .ck:hover{border-color:var(--color-accent)}.awb .ck:active{transform:scale(.9)}
+.awb .ck.on{background:var(--color-accent);border-color:var(--color-accent);box-shadow:0 2px 0 0 var(--color-accent-deep)}
+.awb .prog{height:3px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--color-ink) 10%,transparent);overflow:hidden;margin-top:8px}
+.awb .prog>i{display:block;height:100%;background:var(--color-accent);border-radius:var(--r-pill);transform-origin:left;transition:transform .45s var(--ease-snap)}
+.awb .detail{padding:2px 16px 12px 52px;background:color-mix(in srgb,var(--color-ink) 2%,transparent)}
 .awb .detail .sl{list-style:none;margin:0;padding:0}
-.awb .detail .sl li{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--divider);font-size:14px;letter-spacing:-.224px}
-.awb .detail .sl li .ck{width:18px;height:18px;font-size:10px}
-.awb .detail .sl li.done span.grow{color:var(--ink-muted);text-decoration:line-through}
-.awb .detail .sl li.next span.grow{font-weight:600}
+.awb .detail .sl li{display:flex;gap:12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--color-rule-2);font-size:11.5px}
+.awb .detail .sl li .ck{width:18px;height:18px;font-size:8px}
+.awb .detail .sl li.done span.grow{color:var(--color-muted);text-decoration:line-through}
+.awb .detail .sl li.next span.grow{font-weight:500}
 .awb .detail .notes{margin-top:12px;display:grid;gap:4px}
-.awb .detail .foot{display:flex;gap:17px;flex-wrap:wrap;align-items:center;margin-top:12px}
-.awb .disclose{appearance:none;border:0;background:none;padding:0;color:var(--ink-muted);font:inherit;font-size:14px;font-weight:600;letter-spacing:-.224px;cursor:pointer;transition:color .2s}
-.awb .disclose:hover{color:var(--ink)}
-.awb .empty{padding:24px 17px;color:var(--ink-muted);font-size:14px;letter-spacing:-.224px}
+.awb .detail .foot{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.awb .disclose{appearance:none;border:0;background:none;padding:0;color:var(--color-muted);font:inherit;font-size:11.5px;font-weight:500;cursor:pointer;transition:color .12s}
+.awb .disclose:hover{color:var(--color-ink)}
+.awb .empty{padding:24px 16px;color:var(--color-muted);font-size:11.5px}
 /* —— 时间线 —— */
 .awb .tl{list-style:none;margin:0;padding:4px 0}
-.awb .tl li{display:grid;grid-template-columns:44px 14px minmax(0,1fr);gap:0 8px;align-items:start;padding:8px 17px 8px 12px;position:relative}
-.awb .tl .tm{font-variant-numeric:tabular-nums;font-size:12px;letter-spacing:-.12px;color:var(--ink-muted);padding-top:2px;text-align:right}
+.awb .tl li{display:grid;grid-template-columns:44px 14px minmax(0,1fr);gap:0 8px;align-items:start;padding:8px 16px 8px 12px;position:relative}
+.awb .tl .tm{font-family:var(--font-outlier);font-variant-numeric:tabular-nums;font-size:10px;color:var(--color-muted);padding-top:2px;text-align:right}
 .awb .tl .rail{position:relative;height:100%;min-height:20px}
-.awb .tl .rail:before{content:"";position:absolute;left:6px;top:-8px;bottom:-8px;width:1px;background:var(--hairline)}
+.awb .tl .rail:before{content:"";position:absolute;left:6px;top:-8px;bottom:-8px;width:1px;background:var(--color-rule)}
 .awb .tl li:first-child .rail:before{top:8px}.awb .tl li:last-child .rail:before{bottom:auto;height:16px}
-.awb .tl .rail i{position:absolute;left:2px;top:5px;width:9px;height:9px;border-radius:var(--r-pill);background:var(--canvas);border:1px solid var(--ink-muted)}
-.awb .tl li.focus .rail i{border-color:var(--acc)}.awb .tl li.growth .rail i{border-color:var(--growth)}
-.awb .tl li.warmup .rail i,.awb .tl li.batch .rail i{border-color:var(--life)}
-.awb .tl li.now .rail i{background:var(--acc);border-color:var(--acc)}
-.awb .tl .tt{font-size:14px;line-height:1.29;letter-spacing:-.224px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
-.awb .tl .tm2{font-size:12px;letter-spacing:-.12px;color:var(--ink-muted)}
-.awb .tl li.now .tt{font-weight:600}.awb .tl li.now .tm{color:var(--acc-link);font-weight:600}
-.awb .tl li.sep{padding-top:4px;padding-bottom:4px}.awb .tl li.sep .tt{font-size:12px;color:var(--ink-muted)}
-.awb .tl li.sep .rail i{width:5px;height:5px;left:4px;top:6px;border:0;background:var(--ink-muted)}
-/* —— 悬浮输入栏：唯一常驻的玻璃浮层 —— */
+.awb .tl .rail i{position:absolute;left:2px;top:5px;width:9px;height:9px;border-radius:var(--r-pill);background:var(--color-canvas);border:1px solid var(--color-muted)}
+.awb .tl li.focus .rail i{border-color:var(--color-accent)}.awb .tl li.growth .rail i{border-color:var(--color-mint-deep)}
+.awb .tl li.warmup .rail i,.awb .tl li.batch .rail i{border-color:var(--color-coral)}
+.awb .tl li.now .rail i{background:var(--color-accent);border-color:var(--color-accent)}
+.awb .tl .tt{font-size:11.5px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.awb .tl .tm2{font-size:10px;color:var(--color-muted)}
+.awb .tl li.now .tt{font-weight:600}.awb .tl li.now .tm{color:var(--color-accent-deep);font-weight:600}
+.awb .tl li.sep{padding-top:4px;padding-bottom:4px}.awb .tl li.sep .tt{font-size:10px;color:var(--color-muted)}
+.awb .tl li.sep .rail i{width:5px;height:5px;left:4px;top:6px;border:0;background:var(--color-muted)}
+/* —— 悬浮输入栏：保留的玻璃浮层 —— */
 .awb .dock{position:sticky;bottom:0;z-index:5;margin:auto -24px 0;padding:12px 24px 16px;
-  background:linear-gradient(to bottom,transparent,var(--parchment) 40%)}
-.awb .dock .inner{max-width:760px;margin:0 auto;border-radius:var(--r-lg);padding:12px;
-  background:var(--frosted);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);
-  border:1px solid var(--divider)}
-.awb .dock .sheet{max-height:min(46vh,380px);overflow:auto;padding:4px 6px 8px;margin-bottom:8px;border-bottom:1px solid var(--divider)}
-.awb .dock .sheet .msg{margin:8px 0;padding:8px 12px;border-radius:var(--r-lg);max-width:86%;font-size:14px;letter-spacing:-.224px;width:fit-content}
-.awb .dock .sheet .msg.me{margin-left:auto;background:var(--acc);color:#fff;border-bottom-right-radius:var(--r-xs)}
-.awb .dock .sheet .msg.coach{background:var(--canvas);border:1px solid var(--divider);border-bottom-left-radius:var(--r-xs)}
+  background:linear-gradient(to bottom,transparent,var(--color-paper-2) 40%)}
+.awb .dock .inner{max-width:760px;margin:0 auto;border-radius:var(--r-xl);padding:12px;
+  background:var(--color-paper-2);box-shadow:inset 0 0 0 1px var(--color-rule)}
+.awb .dock .sheet{max-height:min(46vh,380px);overflow:auto;padding:4px 8px 8px;margin-bottom:8px;border-bottom:1px solid var(--color-rule-2)}
+.awb .dock .sheet .msg{margin:8px 0;padding:8px 12px;border-radius:var(--r-lg);max-width:86%;font-size:11.5px;width:fit-content}
+.awb .dock .sheet .msg.me{margin-left:auto;background:var(--color-accent);color:var(--color-accent-ink);border-bottom-right-radius:var(--r-xs);box-shadow:0 2px 0 0 var(--color-accent-deep)}
+.awb .dock .sheet .msg.coach{background:var(--color-canvas);box-shadow:inset 0 0 0 1px var(--color-rule);border-bottom-left-radius:var(--r-xs)}
 .awb .dock .ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:0 4px 8px}
-.awb .seg{display:inline-flex;gap:2px;padding:2px;border-radius:var(--r-md);background:color-mix(in srgb,var(--ink) 6%,transparent)}
-.awb .seg button{border:0;background:none;padding:3px 11px;border-radius:var(--r-sm);font-size:14px;font-weight:400;letter-spacing:-.224px;color:var(--ink-muted);cursor:pointer;white-space:nowrap;
-  transition:background .2s var(--ease),color .2s,transform .15s var(--ease)}
-.awb .seg button:hover:not(.on){color:var(--ink)}
-.awb .seg button:active{transform:scale(.95)}
-.awb .seg button.on{background:var(--canvas);color:var(--ink);border:1px solid var(--divider)}
-.awb .dock select.in{padding:4px 8px;font-size:14px;border-radius:var(--r-sm);max-width:240px}
+.awb .seg{display:inline-flex;gap:2px;padding:2px;border-radius:var(--r-pill);background:var(--color-paper-2)}
+.awb .seg button{border:0;background:none;padding:4px 12px;border-radius:var(--r-pill);font-size:11.5px;font-weight:600;color:var(--color-muted);cursor:pointer;white-space:nowrap;
+  transition:translate .12s var(--ease-snap),box-shadow .12s var(--ease-snap)}
+.awb .seg button:hover:not(.on){color:var(--color-ink)}
+.awb .seg button:active{translate:0 1px}
+.awb .seg button.on{background:var(--color-ink);color:var(--color-paper);border-radius:var(--r-pill)}
+.awb .dock select.in{padding:4px 8px;font-size:11.5px;border-radius:var(--r-sm);max-width:240px}
 .awb .composer{display:flex;gap:8px;align-items:flex-end}
-.awb .composer textarea{flex:1;border:1px solid var(--hairline);background:var(--canvas);border-radius:var(--r-lg);padding:9px 14px;resize:none;outline:none;
-  max-height:140px;font-size:17px;letter-spacing:-.374px;line-height:1.47;min-height:44px;transition:border-color .2s,box-shadow .2s}
-.awb .composer textarea:focus{border-color:var(--acc-focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc-focus) 22%,transparent)}
-.awb .send{width:44px;height:44px;border-radius:var(--r-pill);border:0;background:var(--acc);color:#fff;font-size:18px;font-weight:400;cursor:pointer;flex:none;display:grid;place-items:center;
-  transition:opacity .2s,transform .15s var(--ease),background .2s}
-.awb .send:hover:not(:disabled){background:color-mix(in srgb,var(--acc) 88%,#000)}
-.awb .send:disabled{opacity:.32;cursor:default}.awb .send:active:not(:disabled){transform:scale(.95)}
-.awb .confirm{margin:8px 0 4px;padding:12px 17px;border-radius:var(--r-lg);background:var(--canvas);border:1px solid var(--hairline)}
+.awb .composer textarea{flex:1;border:1px solid var(--color-rule);background:var(--color-canvas);border-radius:var(--r-lg);padding:12px 16px;resize:none;outline:none;
+  max-height:140px;font-size:14px;line-height:1.5;min-height:44px;transition:border-color .12s var(--ease),box-shadow .12s var(--ease)}
+.awb .composer textarea:focus{border-color:var(--color-rule);outline:2px solid var(--color-focus);outline-offset:2px}
+.awb .send{--edge:4px;width:44px;height:44px;border-radius:var(--r-sm);border:0;background:var(--color-accent);color:var(--color-accent-ink);font-size:16px;font-weight:600;cursor:pointer;flex:none;display:grid;place-items:center;transition-timing-function:var(--ease-spring);
+  box-shadow:0 var(--edge) 0 0 var(--color-accent-deep);transition:translate .12s var(--ease-snap),box-shadow .12s var(--ease-snap)}
+.awb .send:hover:not(:disabled){--edge:6px;translate:0 -2px}
+.awb .send:disabled{opacity:.4;cursor:not-allowed}
+.awb .send:active:not(:disabled){--edge:1px;translate:0 3px}
+.awb .confirm{margin:8px 0 4px;padding:12px 16px;border-radius:var(--r-lg);background:var(--color-canvas);box-shadow:inset 0 0 0 1px var(--color-rule)}
 /* —— 其他标签页沿用 —— */
-.awb .focus{border-radius:var(--r-lg);padding:17px;background:var(--parchment);border:1px solid var(--divider)}
+.awb .focus{border-radius:var(--r-xl);padding:16px;background:var(--color-paper-2);box-shadow:inset 0 0 0 1px var(--color-rule)}
 .awb .must{display:grid;gap:12px}
-.awb .bar{height:3px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--ink) 10%,transparent);overflow:hidden;margin:8px 0 4px}
-.awb .bar>i{display:block;height:100%;background:var(--acc);transition:width .35s var(--ease)}
+.awb .bar{height:3px;border-radius:var(--r-pill);background:color-mix(in srgb,var(--color-ink) 10%,transparent);overflow:hidden;margin:8px 0 4px}
+.awb .bar>i{display:block;height:100%;background:var(--color-accent);transform-origin:left;transition:transform .35s var(--ease-snap)}
 .awb .small{display:grid;gap:4px}
-.awb .small .it{display:flex;gap:8px;align-items:center;padding:8px 12px;border-radius:var(--r-sm);background:var(--canvas);border:1px solid var(--divider);font-size:14px;letter-spacing:-.224px}
-.awb .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:17px}
-.awb .ws{background:var(--pearl);border-radius:var(--r-lg);padding:17px;margin-bottom:17px}
-.awb .sess{display:flex;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--divider);font-size:14px;letter-spacing:-.224px}
+.awb .small .it{display:flex;gap:8px;align-items:center;padding:8px 12px;border-radius:var(--r-sm);background:var(--color-canvas);box-shadow:inset 0 0 0 1px var(--color-rule);font-size:11.5px}
+.awb .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.awb .ws{background:var(--color-paper-3);border-radius:var(--r-lg);padding:16px;margin-bottom:16px}
+.awb .sess{display:flex;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--color-rule-2);font-size:11.5px}
 .awb .sess:first-of-type{border-top:0}
-.awb .dot{width:8px;height:8px;border-radius:var(--r-pill);display:inline-block;background:var(--ink-muted)}.awb .dot.running{background:var(--ok)}
-.awb .ideas{display:grid;gap:17px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.awb .dot{width:8px;height:8px;border-radius:var(--r-pill);display:inline-block;background:var(--color-muted)}.awb .dot.running{background:var(--color-accent);box-shadow:0 0 0 2px var(--color-accent-soft)}
+.awb .ideas{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
+.awb .ideas .card{display:flex;flex-direction:column;gap:12px;padding:16px}
+.awb .ideas .card .row{flex-wrap:wrap;row-gap:4px}
+.awb .ideas .card .row:first-child{flex-wrap:nowrap}
+.awb .ideas .card p{margin:0}
 .awb .chips{display:flex;gap:8px;flex-wrap:wrap}
-.awb .chip{border:1px solid var(--hairline);border-radius:var(--r-pill);padding:5px 12px;cursor:pointer;background:var(--canvas);font-size:14px;font-weight:400;letter-spacing:-.224px;
-  transition:background .2s var(--ease),transform .15s var(--ease),border-color .2s,color .2s}
-.awb .chip:hover:not(:disabled){border-color:var(--ink-muted)}
-.awb .chip:active:not(:disabled){transform:scale(.95)}
-.awb .chip.on{background:var(--acc);color:#fff;border-color:transparent}
-.awb .msg{padding:12px 17px;border-radius:var(--r-lg);margin:12px 0;max-width:92%;font-size:17px;letter-spacing:-.374px}
-.awb .msg.me{margin-left:auto;background:color-mix(in srgb,var(--acc) 10%,transparent)}
-.awb .msg.coach{background:var(--canvas);border:1px solid var(--hairline)}
-.awb .paper{margin-top:8px;padding:12px 17px;border-radius:var(--r-sm);background:color-mix(in srgb,var(--warn) 10%,transparent)}
-.awb .clar{font-weight:600}.awb .clar.low{color:var(--bad)}.awb .clar.medium{color:var(--warn)}.awb .clar.high{color:var(--ok)}
+.awb .chip{border:0;border-radius:var(--r-pill);padding:8px 12px;cursor:pointer;background:var(--color-canvas);font-size:11.5px;font-weight:600;
+  box-shadow:inset 0 0 0 1px var(--color-rule);transition:translate .12s var(--ease-snap),box-shadow .12s var(--ease-snap)}
+.awb .chip:hover:not(:disabled){box-shadow:inset 0 0 0 1px var(--color-muted)}
+.awb .chip:active:not(:disabled){translate:0 1px;box-shadow:inset 0 0 0 1px var(--color-rule)}
+.awb .chip.on{background:var(--color-ink);color:var(--color-paper);box-shadow:none}
+.awb .chip:disabled{opacity:.45;cursor:not-allowed}
+.awb .msg{padding:12px 16px;border-radius:var(--r-lg);margin:12px 0;max-width:92%;font-size:13px}
+.awb .msg.me{margin-left:auto;background:var(--color-accent-soft)}
+.awb .msg.coach{background:var(--color-canvas);box-shadow:inset 0 0 0 1px var(--color-rule)}
+.awb .paper{margin-top:8px;padding:12px 16px;border-radius:var(--r-sm);background:color-mix(in srgb,var(--color-accent-warm) 12%,transparent)}
+.awb .clar{font-weight:600}.awb .clar.low{color:var(--color-warn)}.awb .clar.medium{color:var(--color-accent-deep)}.awb .clar.high{color:var(--color-mint-deep)}
 .awb .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}
-.awb .kpi{border-radius:var(--r-lg);padding:17px;background:var(--canvas);border:1px solid var(--hairline)}
-.awb .kpi b{display:block;font-family:var(--font-display);font-size:28px;font-weight:600;letter-spacing:-.3px;line-height:1.14}
+.awb .kpi{border-radius:var(--r-lg);padding:16px;background:var(--color-canvas);box-shadow:inset 0 0 0 1px var(--color-rule)}
+.awb .kpi b{display:block;font-family:var(--font-display);font-variant-numeric:tabular-nums;font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1.14}
 .awb .hours{display:flex;align-items:flex-end;gap:2px;height:70px;margin-top:8px}
-.awb .hours i{flex:1;background:var(--acc);border-radius:var(--r-xs) var(--r-xs) 0 0;min-height:1px}
-.awb .ins{padding:12px 17px;border-radius:var(--r-md);margin-bottom:8px;background:var(--parchment);border:1px solid var(--divider);font-size:14px;letter-spacing:-.224px}
-.awb .ins.warn{border-left:3px solid var(--warn)}.awb .ins.good{border-left:3px solid var(--ok)}
-.awb .toast{position:sticky;top:0;z-index:9;align-self:center;height:0;overflow:visible;display:flex;justify-content:center}
-.awb .toast>span{display:inline-block;margin-top:8px;padding:9px 17px;border-radius:var(--r-pill);font-size:14px;font-weight:400;letter-spacing:-.224px;
-  background:var(--frosted);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--divider);animation:awbpop .34s var(--ease)}
-.awb .toast.err>span{color:var(--bad)}
-@keyframes awbpop{0%{transform:translateY(-6px) scale(.98);opacity:0}100%{transform:none;opacity:1}}
-.awb pre.md{white-space:pre-wrap;font-size:14px;max-height:340px;overflow:auto;padding:17px;border-radius:var(--r-sm);background:var(--parchment)}
+.awb .hours i{flex:1;background:var(--color-mint);border-radius:var(--r-xs) var(--r-xs) 0 0;min-height:1px}
+.awb .ins{padding:12px 16px;border-radius:var(--r-sm);margin-bottom:8px;background:var(--color-paper-2);box-shadow:inset 0 0 0 1px var(--color-rule);font-size:11.5px}
+.awb .ins.warn{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--color-warn) 45%,var(--color-rule))}
+.awb .ins.good{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--color-mint-deep) 45%,var(--color-rule))}
+.awb .toast{position:sticky;top:56px;z-index:9;align-self:center;height:0;overflow:visible;display:flex;justify-content:center}
+.awb .toast>span{display:inline-block;margin-top:8px;padding:8px 16px;border-radius:var(--r-pill);font-size:11.5px;font-weight:600;
+  background:var(--color-paper-2);box-shadow:inset 0 0 0 1px var(--color-rule);animation:awbpop .3s var(--ease-snap)}
+.awb .toast.err>span{color:var(--color-warn)}
+@keyframes awbpop{0%{transform:translateY(-6px)}100%{transform:none}}
+.awb pre.md{white-space:pre-wrap;font-size:11.5px;max-height:340px;overflow:auto;padding:16px;border-radius:var(--r-sm);background:var(--color-paper-2)}
 .awb .awb-ring{box-shadow:none;border:0;background:none}
-.awb .awb-ring text{font-weight:600}
+.awb .awb-ring text{font-weight:500}
 .awb .intake .chat{max-height:300px;overflow:auto}
 .awb .src{margin-bottom:24px}
-.awb .src>.hd{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--hairline);margin-bottom:12px;cursor:pointer}
-.awb .wsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:17px}
+.awb .src>.hd{display:flex;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--color-rule);margin-bottom:12px;cursor:pointer}
+.awb .wsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
 .awb .wsgrid .ws{margin:0}
-.awb .srcrow{display:grid;grid-template-columns:24px 120px 130px 1fr 70px 96px auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--divider);font-size:14px;letter-spacing:-.224px}
+.awb .srcrow{display:grid;grid-template-columns:24px 120px 130px 1fr 70px 96px auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--color-rule);font-size:11.5px}
 .awb .tabpage{padding-bottom:32px}
 /* —— 日历 —— */
-.awb .caltool{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 17px}
-.awb .calwrap{display:grid;grid-template-columns:minmax(0,1fr);gap:17px}
+.awb .caltool{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 16px}
+.awb .calwrap{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
 @container (min-width:900px){.awb .calwrap{grid-template-columns:minmax(0,1fr) 220px}.awb .calwrap>aside{position:sticky;top:64px;align-self:start}}
 .awb .week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
-.awb .day{border-radius:var(--r-lg);background:var(--canvas);border:1px solid var(--divider);padding:8px 6px;min-height:220px;display:flex;flex-direction:column;gap:6px;
-  transition:background .2s var(--ease),border-color .2s}
-.awb .day header{display:flex;align-items:baseline;gap:5px;padding:0 4px}
-.awb .day .wd{font-size:12px;letter-spacing:-.12px;color:var(--ink-muted);font-weight:600}
-.awb .day .dn{font-family:var(--font-display);font-size:21px;font-weight:600;letter-spacing:-.2px;font-variant-numeric:tabular-nums}
-.awb .day.today .dn{color:#fff;background:var(--acc);border-radius:var(--r-pill);min-width:30px;text-align:center;font-size:14px;padding:2px 7px}
+.awb .day{border-radius:var(--r-lg);background:var(--color-canvas);box-shadow:inset 0 0 0 1px var(--color-rule);padding:8px;min-height:220px;display:flex;flex-direction:column;gap:8px;
+  transition:background .12s var(--ease),border-color .12s}
+.awb .day header{display:flex;align-items:baseline;gap:8px;padding:0 4px}
+.awb .day .wd{font-size:10px;color:var(--color-muted);font-weight:500}
+.awb .day .dn{font-family:var(--font-display);font-variant-numeric:tabular-nums;font-size:19px;font-weight:600}
+.awb .day.today .dn{color:var(--color-accent-ink);background:var(--color-accent);border-radius:var(--r-pill);min-width:30px;text-align:center;font-size:11.5px;padding:2px 8px;box-shadow:0 2px 0 0 var(--color-accent-deep)}
 .awb .day.past{opacity:.8}
-/* 拖放目标：蓝色描边（无阴影） */
-.awb .day.over,.awb .unsch.over{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 6%,var(--canvas))}
+/* 拖放目标：绿色描边（Dose 的唯一信号色） */
+.awb .day.over,.awb .unsch.over{border-color:var(--color-accent);background:var(--color-accent-soft);box-shadow:inset 0 0 0 2px var(--color-accent)}
 .awb .day .items{display:flex;flex-direction:column;gap:4px;flex:1}
-.awb .day .none,.awb .unsch .none{color:var(--ink-muted);font-size:12px;letter-spacing:-.12px;padding:4px;opacity:.7}
-.awb .day footer{font-size:12px;letter-spacing:-.12px;color:var(--ink-muted);padding:6px 4px 0;border-top:1px solid var(--divider)}
-.awb .day .add{border:0;background:none;color:var(--acc-link);font-size:17px;line-height:1;cursor:pointer;border-radius:var(--r-sm);padding:2px 6px;opacity:.6;transition:opacity .2s,transform .15s var(--ease)}
-.awb .day:hover .add,.awb .day .add:focus{opacity:1}.awb .day .add:hover{background:color-mix(in srgb,var(--ink) 5%,transparent)}.awb .day .add:active{transform:scale(.95)}
-.awb .duebar{display:flex;flex-direction:column;gap:2px;padding:0 4px}.awb .duebar .link{font-size:12px;letter-spacing:-.12px;text-align:left;padding:0}
-.awb .ct{border-radius:var(--r-sm);padding:6px 8px;background:var(--parchment);border:1px solid var(--divider);border-left:3px solid var(--acc);
-  cursor:grab;user-select:none;transition:background .2s var(--ease),transform .15s var(--ease)}
-.awb .ct:hover{background:color-mix(in srgb,var(--ink) 4%,var(--pearl))}
-.awb .ct:active{cursor:grabbing;transform:scale(.95)}
-.awb .ct.growth{border-left-color:var(--growth)}.awb .ct.life{border-left-color:var(--life)}
-.awb .ct.done{cursor:pointer;opacity:.6;border-left-color:var(--ink-muted)}.awb .ct.done .ctt{text-decoration:line-through}
-.awb .ct.late{background:color-mix(in srgb,var(--bad) 7%,var(--parchment))}.awb .ct.late .ctm{color:var(--bad)}
-.awb .ctt{font-size:14px;font-weight:400;line-height:1.29;letter-spacing:-.224px;word-break:break-word}
-.awb .ctm{font-size:12px;letter-spacing:-.12px;color:var(--ink-muted);margin-top:2px}
-.awb .unsch{border-radius:var(--r-lg);background:var(--canvas);border:1px dashed var(--hairline);padding:12px;display:flex;flex-direction:column;gap:6px;
-  transition:background .2s var(--ease),border-color .2s}
-.awb .mhead{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:4px}.awb .mhead span{font-size:12px;letter-spacing:-.12px;color:var(--ink-muted);font-weight:600;text-align:center}
+.awb .day .none,.awb .unsch .none{color:var(--color-muted);font-size:10px;padding:4px;opacity:.7}
+.awb .day footer{font-size:10px;color:var(--color-muted);padding:8px 4px 0;border-top:1px solid var(--color-rule-2)}
+.awb .day .add{border:0;background:none;color:var(--color-accent-deep);font-size:16px;font-weight:600;line-height:1;cursor:pointer;border-radius:var(--r-pill);padding:2px 8px;opacity:.6;transition:opacity .12s,background .12s}
+.awb .day:hover .add,.awb .day .add:focus{opacity:1}.awb .day .add:hover{background:color-mix(in srgb,var(--color-ink) 5%,transparent)}
+.awb .duebar{display:flex;flex-direction:column;gap:2px;padding:0 4px}.awb .duebar .link{font-size:10px;text-align:left;padding:0}
+/* 日历块 = 药盒分格：tinted plastic，左色条承重 */
+.awb .ct{position:relative;border-radius:var(--r-sm);padding:8px;background:var(--color-accent-soft);
+  cursor:grab;user-select:none;transition:background .12s var(--ease-snap),transform .12s var(--ease-snap)}
+.awb .ct:hover{background:color-mix(in srgb,var(--color-accent-soft) 80%,transparent)}
+.awb .ct:active{cursor:grabbing;transform:translateY(1px)}
+.awb .ct>*{position:relative;left:10px}
+.awb .ct:before{content:"";position:absolute;left:8px;top:10px;width:6px;height:6px;border-radius:2px;background:var(--color-accent)}
+.awb .ct.growth:before{background:var(--color-mint-deep)}
+.awb .ct.life:before{background:var(--color-coral)};background:color-mix(in srgb,var(--color-accent-warm) 14%,transparent)}
+.awb .ct.done{cursor:pointer;opacity:.55}.awb .ct.done:before{background:var(--color-muted)}.awb .ct.done .ctt{text-decoration:line-through}
+.awb .ct.late{background:color-mix(in srgb,var(--color-warn) 12%,transparent)}
+.awb .ct.late .ctm{color:var(--color-warn)}
+.awb .ctt{font-size:11.5px;line-height:1.3;word-break:break-word}
+.awb .ctm{font-size:10px;color:var(--color-muted);margin-top:2px}
+.awb .unsch{border-radius:var(--r-lg);background:var(--color-canvas);border:2px dashed var(--color-rule);padding:12px;display:flex;flex-direction:column;gap:8px;
+  transition:background .12s var(--ease),border-color .12s}
+.awb .mhead{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:4px}.awb .mhead span{font-size:10px;color:var(--color-muted);font-weight:500;text-align:center}
 .awb .month{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}
-.awb .mc{appearance:none;font:inherit;color:inherit;text-align:left;border-radius:var(--r-lg);background:var(--canvas);border:1px solid var(--divider);padding:6px 7px;min-height:96px;
-  display:flex;flex-direction:column;gap:3px;cursor:pointer;min-width:0;transition:background .2s var(--ease),border-color .2s,transform .15s var(--ease)}
-.awb .mc:hover{background:var(--parchment);border-color:var(--hairline)}
-.awb .mc:active{transform:scale(.95)}
+.awb .mc{appearance:none;font:inherit;color:inherit;text-align:left;border-radius:var(--r-lg);background:var(--color-canvas);box-shadow:inset 0 0 0 1px var(--color-rule);padding:8px;min-height:96px;
+  display:flex;flex-direction:column;gap:4px;cursor:pointer;min-width:0;transition:translate .12s var(--ease-snap),box-shadow .12s var(--ease-snap)}
+.awb .mc:hover{box-shadow:inset 0 0 0 1px var(--color-muted)}
+.awb .mc:active{translate:0 1px;box-shadow:inset 0 0 0 1px var(--color-rule)}
 .awb .mc.out{opacity:.42}.awb .mc.past .mchip{opacity:.75}
-.awb .mc .dn{font-size:14px;font-weight:600;letter-spacing:-.224px;font-variant-numeric:tabular-nums}
-.awb .mc.today .dn{color:#fff;background:var(--acc);border-radius:var(--r-pill);padding:0 7px}
-.awb .mchip{font-size:12px;line-height:1.3;letter-spacing:-.12px;padding:1px 6px;border-radius:var(--r-xs);background:color-mix(in srgb,var(--acc) 10%,transparent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.awb .mchip.growth{background:color-mix(in srgb,var(--growth) 12%,transparent)}.awb .mchip.life{background:color-mix(in srgb,var(--life) 12%,transparent)}
-.awb .mchip.done{background:color-mix(in srgb,var(--ink) 7%,transparent);color:var(--ink-muted);text-decoration:line-through}.awb .mchip.late{color:var(--bad)}
-.awb .mc .more{font-size:12px;letter-spacing:-.12px;color:var(--ink-muted)}.awb .mdone{font-size:12px;letter-spacing:-.12px;color:var(--ok);font-weight:600}
-.awb .dueDot{width:7px;height:7px;border-radius:var(--r-pill);background:var(--bad)}
-/* 弹窗：玻璃 + 唯一一处柔和投影（内容浮在页面之上） */
-.awb .modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:24px;background:color-mix(in srgb,#000 26%,transparent);
-  -webkit-backdrop-filter:blur(10px) saturate(140%);backdrop-filter:blur(10px) saturate(140%);animation:awbfade .22s var(--ease)}
-.awb .mcard2{width:min(520px,100%);max-height:90vh;overflow:auto;border-radius:var(--r-lg);padding:24px;
-  background:var(--frosted);-webkit-backdrop-filter:saturate(180%) blur(28px);backdrop-filter:saturate(180%) blur(28px);
-  border:1px solid var(--divider);box-shadow:0 20px 60px rgba(0,0,0,.28);animation:awbpop .3s var(--ease)}
-.awb .mcard2 .ttl{flex:1;border:0;background:none;font-family:var(--font-display);font-size:21px;font-weight:600;letter-spacing:.231px;resize:none;outline:none;padding:2px 4px;border-radius:var(--r-sm);line-height:1.19;transition:background .2s}
-.awb .mcard2 .ttl:focus{background:var(--parchment)}
-.awb .mcard2 .form{display:grid;grid-template-columns:72px 1fr;gap:12px 12px;align-items:center;margin-top:17px;font-size:14px;letter-spacing:-.224px}
+.awb .mc .dn{font-size:11.5px;font-weight:500;font-variant-numeric:tabular-nums}
+.awb .mc.today .dn{color:var(--color-accent-ink);background:var(--color-accent);border-radius:var(--r-pill);padding:0 8px}
+.awb .mchip{font-size:10px;line-height:1.3;padding:4px 8px;border-radius:var(--r-xs);background:var(--color-accent-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.awb .mchip.growth{background:color-mix(in srgb,var(--color-mint) 35%,transparent)}.awb .mchip.life{background:color-mix(in srgb,var(--color-coral) 16%,transparent)}
+.awb .mchip.done{background:color-mix(in srgb,var(--color-ink) 7%,transparent);color:var(--color-muted);text-decoration:line-through}.awb .mchip.late{color:var(--color-warn)}
+.awb .mc .more{font-size:10px;color:var(--color-muted)}.awb .mdone{font-size:10px;color:var(--color-mint-deep);font-weight:600}
+.awb .dueDot{width:7px;height:7px;border-radius:var(--r-pill);background:var(--color-coral)}
+/* 弹窗：暖纸浮层 + 一处柔和投影（内容浮在页面之上） */
+.awb .modal{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:24px;background:var(--color-overlay);
+  animation:awbfade .22s var(--ease-snap)}
+.awb .mcard2{width:min(520px,100%);max-height:90vh;overflow:auto;border-radius:var(--r-xl);padding:24px;
+  background:var(--color-paper);filter:var(--shadow-paper);animation:awbpop .3s var(--ease-spring)}
+.awb .mcard2 .ttl{flex:1;border:0;background:none;font-family:var(--font-display);font-size:19px;font-weight:600;letter-spacing:-.03em;resize:none;outline:none;padding:2px 4px;border-radius:var(--r-sm);line-height:1.02;transition:background .12s}
+.awb .mcard2 .ttl:focus{background:var(--color-paper-2)}
+.awb .mcard2 .form{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center;margin-top:16px;font-size:11.5px}
 .awb .mcard2 input[type=date]{padding:4px 8px}
 @keyframes awbfade{from{opacity:0}to{opacity:1}}
-/* 不支持背景模糊时：退化为不透明 Parchment，保证可读 */
+/* 不支持背景模糊时：退化为不透明暖纸，保证可读 */
 @supports not ((backdrop-filter:blur(2px)) or (-webkit-backdrop-filter:blur(2px))){
-  .awb .topbar,.awb .dock .inner,.awb .mcard2,.awb .toast>span{background:var(--parchment)}
-  .awb .modal{background:color-mix(in srgb,#000 45%,transparent)}
+  .awb .topbar,.awb .dock .inner,.awb .mcard2,.awb .toast>span{background:var(--color-paper-2)}
+  .awb .modal{background:var(--color-overlay)}
 }
 @container (max-width:700px){.awb .week{grid-template-columns:minmax(0,1fr)}.awb .day{min-height:0}.awb .mc{min-height:64px}.awb .mchip{display:none}}
 @container (max-width:760px){.awb .srcrow{grid-template-columns:24px 1fr 1fr}}
@@ -359,7 +399,7 @@ window.__ModuleLoader__.load({
         h('circle', { cx: size / 2, cy: size / 2, r, fill: 'none', stroke: color, strokeWidth: 6, strokeLinecap: 'round', strokeDasharray: `${(c * v) / 100} ${c}`, transform: `rotate(-90 ${size / 2} ${size / 2})`, style: { transition: 'stroke-dasharray .4s' } }),
         h('text', { x: '50%', y: '50%', dominantBaseline: 'central', textAnchor: 'middle', fontSize: size * 0.24, fill: 'currentColor' }, pct == null ? '—' : `${Math.round(v)}%`))
     }
-    const Badge = ({ track }) => h('span', { className: cx('badge', track) }, TRACK[track]?.[1], ' ', TRACK[track]?.[0] ?? track)
+    const Badge = ({ track }) => h('span', { className: cx('badge', track) }, TRACK[track]?.[0] ?? track)
     function Stars({ value, onChange, label }) {
       return h('span', { className: 'row', style: { gap: 2 }, title: label }, [1, 2, 3].map((n) => h('button', { key: n, type: 'button', className: 'btn ghost', style: { padding: '0 3px' }, 'aria-label': `${label} ${n}`, onClick: () => onChange(n) }, n <= value ? '●' : '○')))
     }
@@ -376,12 +416,12 @@ window.__ModuleLoader__.load({
         add: (body) => run('add', () => api('POST', '/tasks', body), '已加入任务池'),
         patch: (id, body, ok) => run(`p${id}`, () => api('PATCH', `/tasks/${id}`, body), ok),
         remove: (id) => run(`d${id}`, () => api('DELETE', `/tasks/${id}`), '已删除'),
-        split: (id, replace) => run(`s${id}`, () => api('POST', `/tasks/${id}/split`, { replace }), (r) => (r.source === 'ai' ? '✂️ AI 已拆成小步' : '✂️ 已按模板拆分（模型不可用）')),
+        split: (id, replace) => run(`s${id}`, () => api('POST', `/tasks/${id}/split`, { replace }), (r) => (r.source === 'ai' ? 'AI 已拆成小步' : '已按模板拆分（模型不可用）')),
         addStep: (id, title) => run(`as${id}`, () => api('POST', `/tasks/${id}/steps`, { title, estimateMin: 15 })),
-        step: (id, sid, done) => run(`st${sid}`, () => api('PATCH', `/tasks/${id}/steps/${sid}`, { done }), (r) => (r.taskDone ? '🎉 整个任务完成！记得写一句汇报要点' : done ? `✅ 又推进一步！${['干得漂亮', '继续保持', '节奏很好', '离目标更近了'][Math.floor(Math.random() * 4)]}` : null)),
+        step: (id, sid, done) => run(`st${sid}`, () => api('PATCH', `/tasks/${id}/steps/${sid}`, { done }), (r) => (r.taskDone ? '整个任务完成！记得写一句汇报要点' : done ? `又推进一步！${['干得漂亮', '继续保持', '节奏很好', '离目标更近了'][Math.floor(Math.random() * 4)]}` : null)),
         delStep: (id, sid) => run(`ds${sid}`, () => api('DELETE', `/tasks/${id}/steps/${sid}`)),
         focus: (id, action, stepId) => run(`f${id}`, () => api('POST', `/tasks/${id}/focus`, { action, stepId }), (r) => (action === 'start' ? '⏱ 开始专注，其他念头先丢进灵感库' : action === 'stop' ? `本次专注 ${r.minutes} 分钟` : '已记录一次打断，没关系，回到当前这一步')),
-        note: (id, kind, text) => run(`n${id}`, () => api('POST', `/tasks/${id}/notes`, { kind, text }), '📝 已记录汇报要点'),
+        note: (id, kind, text) => run(`n${id}`, () => api('POST', `/tasks/${id}/notes`, { kind, text }), '已记录汇报要点'),
         delNote: (id, nid) => run(`dn${nid}`, () => api('DELETE', `/tasks/${id}/notes/${nid}`)),
       }
     }
@@ -408,7 +448,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'eyebrow' }, plan.doneToday.length ? '今天' : '开始'),
         h('div', { className: 'title' }, plan.doneToday.length ? `必做都清空了，完成 ${plan.doneToday.length} 项` : '还没有任务'),
         h('div', { className: 'sub' }, plan.doneToday.length ? '可以收工，或者挑一个小任务。' : '在下面说一句你想做的事，越小越好。'),
-        !plan.doneToday.length && h('div', { className: 'acts' }, h('button', { className: 'btn pri', onClick: () => focusDock('task') }, '＋ 加一个任务')))
+        !plan.doneToday.length && h('div', { className: 'acts' }, h('button', { className: 'btn pri', onClick: () => focusDock('task') }, '加一个任务')))
       const taskId = activeTask?.id ?? next.taskId
       const task = all.find((t) => t.id === taskId)
       const step = (task?.steps ?? []).find((s) => !s.done)
@@ -423,9 +463,9 @@ window.__ModuleLoader__.load({
             h('div', { className: cx('clock', over && 'over') }, fmtClock(elapsed)),
             h('div', { className: 'muted', style: { marginTop: 4 } }, over ? '到时间了，起来活动一下' : `目标 ${plan.stats.focusMinutes} 分钟`))),
         h('div', { className: 'acts' },
-          !active && h('button', { className: 'btn pri', onClick: () => act.focus(taskId, 'start', step?.id) }, '▶  开始专注'),
+          !active && h('button', { className: 'btn pri', onClick: () => act.focus(taskId, 'start', step?.id) }, '开始专注'),
           active && step && h('button', { className: 'btn pri', onClick: () => act.step(taskId, step.id, true) }, '✓  这一步完成'),
-          !step && task && h('button', { className: cx('btn', !active ? '' : 'pri'), disabled: act.busy === `s${taskId}`, onClick: () => act.split(taskId) }, act.busy === `s${taskId}` ? '拆分中…' : '✂️  帮我拆成小步'),
+          !step && task && h('button', { className: cx('btn', !active ? '' : 'pri'), disabled: act.busy === `s${taskId}`, onClick: () => act.split(taskId) }, act.busy === `s${taskId}` ? '拆分中…' : '帮我拆成小步'),
           active && h('button', { className: 'btn', onClick: () => act.focus(taskId, 'interrupt') }, '被打断了'),
           active && h('button', { className: 'btn', onClick: () => act.focus(taskId, 'stop') }, '暂停')))
     }
@@ -433,7 +473,7 @@ window.__ModuleLoader__.load({
     // ———————— 对话式录入：说一句话，没说清的重要 / 紧急 / 截止日期逐项追问 ————————
     const IMP = { 3: '很重要', 2: '重要', 1: '一般' }
     const URG = { 3: '很急（今明两天）', 2: '这周内', 1: '不急' }
-    const dueLabel = (d) => (d === 'none' ? '不设截止' : d ? `📅 ${d}` : '')
+    const dueLabel = (d) => (d === 'none' ? '不设截止' : d ? `截止 ${d}` : '')
     const ASK = {
       importance: { q: '这件事有多重要？', chips: [[3, '很重要'], [2, '重要'], [1, '一般']] },
       urgency: { q: '有多急？', chips: [[3, '很急（今明两天）'], [2, '这周内'], [1, '不急']] },
@@ -460,7 +500,7 @@ window.__ModuleLoader__.load({
           if (!draft) {
             const { draft: d } = await api('POST', '/intake/parse', { text: t })
             const known = [d.importance && IMP[d.importance], d.urgency && URG[d.urgency], d.due && dueLabel(d.due)].filter(Boolean)
-            say({ bot: `好，记下「${d.title}」（${TRACK[d.track][1]} ${TRACK[d.track][0]}${d.estimateMin ? `，约 ${d.estimateMin} 分钟` : ''}）。${known.length ? `听出来：${known.join('、')}。` : ''}` })
+            say({ bot: `好，记下「${d.title}」（${TRACK[d.track][0]}${d.estimateMin ? `，约 ${d.estimateMin} 分钟` : ''}）。${known.length ? `听出来：${known.join('、')}。` : ''}` })
             advance(d)
           } else if (ask) {
             const r = await api('POST', '/intake/answer', { field: ask, text: t })
@@ -499,9 +539,9 @@ window.__ModuleLoader__.load({
         it.msgs.map((m, i) => h('div', { key: i, className: cx('msg', m.me ? 'me' : 'coach') }, m.me ?? m.bot)),
         it.ask && last?.field === it.ask && h('div', { className: 'chips', style: { margin: '2px 0 4px' } }, ASK[it.ask].chips.map(([v, l]) => h('button', { key: l, className: 'chip', disabled: it.busy, onClick: () => it.pickChip(it.ask, v ?? l, l) }, l))),
         ready && h('div', { className: 'confirm' },
-          h('div', { style: { fontSize: 17, fontWeight: 600 } }, d.title),
+          h('div', { style: { fontSize: 15, fontWeight: 500 } }, d.title),
           h('div', { className: 'row', style: { marginTop: 8 } },
-            h('span', { className: 'seg' }, Object.entries(TRACK).map(([k, [l, ic]]) => h('button', { key: k, className: cx(d.track === k && 'on'), onClick: () => it.setDraft({ ...d, track: k }) }, `${ic} ${l}`))),
+            h('span', { className: 'seg' }, Object.entries(TRACK).map(([k, [l]]) => h('button', { key: k, className: cx(d.track === k && 'on'), onClick: () => it.setDraft({ ...d, track: k }) }, l))),
             h('label', { className: 'muted' }, '预计 ', h('input', { className: 'in', type: 'number', min: 5, step: 5, style: { width: 62, padding: '2px 6px' }, value: d.estimateMin ?? 30, onChange: (e) => it.setDraft({ ...d, estimateMin: Number(e.target.value) }) }), ' 分钟')),
           h('div', { className: 'row', style: { marginTop: 8, gap: 6 } },
             ORDER.map((f) => h('button', { key: f, className: 'chip', title: '点击重新回答', onClick: () => it.reask(f) },
@@ -561,7 +601,7 @@ window.__ModuleLoader__.load({
           mode === 'note' && h('span', { className: 'seg' }, NOTE_KIND.map(([k, l]) => h('button', { key: k, className: cx(kind === k && 'on'), onClick: () => setKind(k) }, l))),
           mode === 'task' && setPlanDate && (planDate
             ? h('span', { className: 'pill live' }, `安排在 ${mdLabel(planDate)}`, h('button', { className: 'link plain', style: { padding: 0, fontSize: 12 }, 'aria-label': '不指定日期', onClick: () => setPlanDate(null) }, '×'))
-            : h('span', { className: 'muted' }, '不指定日期，点某天的 ＋ 可安排')),
+            : h('span', { className: 'muted' }, '不指定日期，点某天格里的加号可安排')),
           mode === 'task' && it.active && folded && h('button', { className: 'link', onClick: () => setFolded(false) }, it.draft ? `继续录入「${it.draft.title}」` : '展开对话')),
         h('form', { className: 'composer', onSubmit: (e) => { e.preventDefault(); send() } },
           h('textarea', { ref: taRef, rows: Math.min(4, (value.match(/\n/g)?.length ?? 0) + 1), value, placeholder: ph, 'aria-label': ph,
@@ -584,7 +624,7 @@ window.__ModuleLoader__.load({
       const nextStep = steps.find((s) => !s.done)
       const pct = steps.length ? Math.round((doneN / steps.length) * 100) : 0
       const due = shortDue(t.due)
-      const meta = [`${TRACK[t.track]?.[1] ?? ''} ${TRACK[t.track]?.[0] ?? ''}`.trim(), `约 ${t.adjustedEstimate ?? t.estimateMin} 分钟`, steps.length ? `${doneN}/${steps.length} 步` : '未拆分']
+      const meta = [TRACK[t.track]?.[0] ?? '', `约 ${t.adjustedEstimate ?? t.estimateMin} 分钟`, steps.length ? `${doneN}/${steps.length} 步` : '未拆分']
       return h(Fragment, null,
         h('div', { className: cx('rowi click', isCurrent && 'cur'), role: 'button', tabIndex: 0, 'aria-expanded': open, onClick: onToggle, onKeyDown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onToggle() } } },
           index != null ? h('span', { className: 'lead' }, index + 1) : h('span', { className: 'lead' }, '·'),
@@ -667,7 +707,7 @@ window.__ModuleLoader__.load({
       return h('div', { className: 'today' },
         h('header', { className: 'large' }, h('h1', null, '今天'), h('p', null, sub)),
         h(FocusBar, props),
-        plan.capacityChange && h('p', { className: 'muted', style: { margin: '10px 4px 0' } }, `📊 ${plan.capacityChange}`),
+        plan.capacityChange && h('p', { className: 'muted', style: { margin: '10px 4px 0' } }, `${plan.capacityChange}`),
         h('div', { className: 'split' },
           h('main', null,
             h('h4', null, `三件必做${plan.workday ? '' : ' · 休息日不排工作'}`),
@@ -678,7 +718,7 @@ window.__ModuleLoader__.load({
               h('h4', null, '顺手做 · 20 分钟以内'),
               h('div', { className: 'group' }, plan.small.map((t) => h('div', { key: t.id, className: 'rowi' },
                 h('button', { className: 'ck', 'aria-label': `完成：${t.title}`, onClick: () => act.patch(t.id, { status: 'done' }, '小任务 +1') }),
-                h('div', { className: 'grow' }, h('div', { className: 't' }, t.title), h('div', { className: 'm' }, `${TRACK[t.track]?.[1] ?? ''} ${TRACK[t.track]?.[0] ?? ''} · ${t.adjustedEstimate} 分钟`)),
+                h('div', { className: 'grow' }, h('div', { className: 't' }, t.title), h('div', { className: 'm' }, `${TRACK[t.track]?.[0] ?? ''} · ${t.adjustedEstimate} 分钟`)),
                 h('button', { className: 'link', onClick: () => act.patch(t.id, { pinnedDate: true }, '已提为今日必做') }, '提为必做'))))),
             plan.doneToday.length > 0 && h(Fragment, null,
               h('h4', null, h('button', { className: 'disclose', 'aria-expanded': showDone, onClick: () => setShowDone(!showDone) }, `${showDone ? '▾' : '▸'} 今天已完成 ${plan.doneToday.length} 项`)),
@@ -693,7 +733,7 @@ window.__ModuleLoader__.load({
           h('aside', null,
             h('h4', null, '时间安排'),
             h('div', { className: 'group' }, h(Timeline, { plan, now })),
-            h('p', { className: 'muted', style: { margin: '8px 4px 0', fontSize: 11.5 } }, '到点就只做这一件。'))),
+            h('p', { className: 'muted', style: { margin: '8px 4px 0', fontSize: 10 } }, '到点就只做这一件。'))),
         h('div', { style: { height: 20 } }),
         h(Dock, { ...props, act }))
     }
@@ -723,7 +763,7 @@ window.__ModuleLoader__.load({
         setBusy(true)
         try {
           await api('POST', '/ideas/batch', { items: items.map((i) => ({ ...i, source: preview.source })), rawText: preview.rawText, replaceId: preview.replaceId })
-          notify(preview.replaceId ? `已拆成 ${items.length} 条，替换了原来那条` : `💡 收进 ${items.length} 条灵感`)
+          notify(preview.replaceId ? `已拆成 ${items.length} 条，替换了原来那条` : `收进 ${items.length} 条灵感`)
           if (!preview.replaceId) setText('')
           setPreview(null); load()
         } catch (err) { notify(err.message, true) } finally { setBusy(false) }
@@ -751,13 +791,13 @@ window.__ModuleLoader__.load({
         preview ? h('div', { className: 'card', style: { borderColor: 'var(--acc)' } },
           h('div', { className: 'row' },
             h('h3', { className: 'grow' }, `${preview.replaceId ? '重新拆分' : '拆出'} ${preview.items.length} 条，确认一下`),
-            h('span', { className: 'muted' }, preview.source === 'ai' ? '🤖 AI 拆分' : '⚙️ 规则模式（模型没响应，按换行和编号拆）')),
+            h('span', { className: 'muted' }, preview.source === 'ai' ? 'AI 拆分' : '规则模式（模型没响应，按换行和编号拆）')),
           h('p', { className: 'muted', style: { margin: '4px 0 8px' } }, '可以改文字、改分类、删掉，或把相邻两条合并。'),
           preview.items.map((it, k) => h('div', { key: k, className: 'card', style: { marginBottom: 8, background: 'transparent' } },
             h('div', { className: 'row' },
               h('b', { className: 'muted' }, `${k + 1}.`),
-              h('select', { className: 'in', style: { padding: '1px 4px', fontSize: 12 }, value: it.category, 'aria-label': '大类', onChange: (e) => editItem(k, { category: e.target.value }) }, Object.entries(IDEA_CAT).map(([c, [l, ic]]) => h('option', { key: c, value: c }, `${ic} ${l}`))),
-              h('input', { className: 'in', style: { width: 110, padding: '1px 6px', fontSize: 12 }, value: it.subcategory, 'aria-label': '小类', onChange: (e) => editItem(k, { subcategory: e.target.value }) }),
+              h('select', { className: 'in', style: { padding: '1px 4px', fontSize: 10 }, value: it.category, 'aria-label': '大类', onChange: (e) => editItem(k, { category: e.target.value }) }, Object.entries(IDEA_CAT).map(([c, [l]]) => h('option', { key: c, value: c }, l))),
+              h('input', { className: 'in', style: { width: 110, padding: '1px 6px', fontSize: 10 }, value: it.subcategory, 'aria-label': '小类', onChange: (e) => editItem(k, { subcategory: e.target.value }) }),
               h('span', { className: 'grow' }),
               k < preview.items.length - 1 && h('button', { className: 'btn ghost', title: '和下一条合并', onClick: () => mergeDown(k) }, '⤓ 合并下一条'),
               h('button', { className: 'btn ghost danger', 'aria-label': '删除这条', onClick: () => dropItem(k) }, '×')),
@@ -769,29 +809,29 @@ window.__ModuleLoader__.load({
             h('button', { className: 'btn ghost', disabled: busy, onClick: () => setPreview(null) }, '取消')))
         : h('form', { className: 'card', onSubmit: add },
           h('textarea', { className: 'in', rows: 3, placeholder: '脑子里冒出什么就丢进来，一次写好几件也行，AI 会拆成多条并分别分类。专注时冒出的念头也放这里，回头再说。', value: text, onChange: (e) => setText(e.target.value), onKeyDown: (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) add(e) } }),
-          h('div', { className: 'row', style: { marginTop: 6 } }, h('span', { className: 'muted grow' }, '⌘/Ctrl + Enter 提交 · 先预览，确认后才入库'), h('button', { className: 'btn pri', disabled: busy || !text.trim() }, busy ? 'AI 拆分中…' : '💡 拆分并预览'))),
+          h('div', { className: 'row', style: { marginTop: 6 } }, h('span', { className: 'muted grow' }, '⌘/Ctrl + Enter 提交，先预览，确认后才入库'), h('button', { className: 'btn pri', disabled: busy || !text.trim() }, busy ? 'AI 拆分中…' : '💡 拆分并预览'))),
         h('div', { className: 'chips', style: { marginTop: 12 } },
-          [['all', '全部'], ...Object.entries(IDEA_CAT).map(([k, [l, i]]) => [k, `${i} ${l}`])].map(([k, l]) => h('button', { key: k, className: cx('chip', cat === k && 'on'), onClick: () => { setCat(k); setSub('all') } }, `${l} ${k === 'all' ? ideas.length : ideas.filter((i) => i.category === k).length}`))),
+          [['all', '全部'], ...Object.entries(IDEA_CAT).map(([k, [l]]) => [k, l])].map(([k, l]) => h('button', { key: k, className: cx('chip', cat === k && 'on'), onClick: () => { setCat(k); setSub('all') } }, `${l} ${k === 'all' ? ideas.length : ideas.filter((i) => i.category === k).length}`))),
         subs.length > 0 && h('div', { className: 'chips', style: { marginTop: 6 } },
           [['all', '全部小类'], ...subs.map((s) => [s, s])].map(([k, l]) => h('button', { key: k, className: cx('chip', sub === k && 'on'), onClick: () => setSub(k) }, k === 'all' ? l : `${l} ${inCat.filter((i) => i.subcategory === k).length}`)),
           h('input', { className: 'in', style: { marginLeft: 'auto' }, placeholder: '搜索…', value: q, onChange: (e) => setQ(e.target.value) })),
         h('div', { className: 'ideas', style: { marginTop: 10 } }, shown.length ? shown.map((i) => h('div', { key: i.id, className: 'card' },
           h('div', { className: 'row' },
-            h('select', { className: 'in', style: { padding: '1px 4px', fontSize: 12 }, value: i.category, onChange: (e) => patch(i.id, { category: e.target.value }), 'aria-label': '大类' }, Object.entries(IDEA_CAT).map(([k, [l, ic]]) => h('option', { key: k, value: k }, `${ic} ${l}`))),
+            h('select', { className: 'in', style: { padding: '1px 4px', fontSize: 10 }, value: i.category, onChange: (e) => patch(i.id, { category: e.target.value }), 'aria-label': '大类' }, Object.entries(IDEA_CAT).map(([k, [l]]) => h('option', { key: k, value: k }, l))),
             h('button', { className: 'badge', style: { border: 0, cursor: 'pointer' }, title: '点击修改小类', onClick: () => { const v = prompt('小类', i.subcategory); if (v) patch(i.id, { subcategory: v }) } }, `# ${i.subcategory}`),
             h('span', { className: 'grow' }),
             h('button', { className: 'btn ghost', 'aria-label': '星标', onClick: () => patch(i.id, { starred: !i.starred }) }, i.starred ? '★' : '☆')),
-          h('p', { style: { margin: '8px 0', whiteSpace: 'pre-wrap' } }, i.text),
+          h('p', { style: { whiteSpace: 'pre-wrap' } }, i.text),
           i.nextAction && h('p', { className: 'muted' }, `下一步：${i.nextAction}`),
-          (i.rawText || i.fullText) && (i.rawText !== i.text || i.fullText) && h('div', { style: { marginTop: 4 } },
-            h('button', { className: 'btn ghost', style: { padding: '0 4px' }, onClick: () => setOpenRaw({ ...openRaw, [i.id]: !openRaw[i.id] }) }, openRaw[i.id] ? '▾ 收起原话' : '▸ 原话'),
+          (i.rawText || i.fullText) && (i.rawText !== i.text || i.fullText) && h('div', null,
+            h('button', { className: 'link plain', onClick: () => setOpenRaw({ ...openRaw, [i.id]: !openRaw[i.id] }) }, openRaw[i.id] ? '收起原话' : '原话'),
             openRaw[i.id] && h('p', { className: 'muted', style: { whiteSpace: 'pre-wrap', margin: '4px 0 0 8px' } }, i.rawText || i.fullText,
               i.fullText && i.fullText !== i.rawText && h(Fragment, null, '\n\n— 整段原话 —\n', i.fullText))),
-          h('div', { className: 'row', style: { marginTop: 6 } },
-            h('span', { className: 'muted grow' }, ago(i.createdAt)),
-            h('button', { className: 'btn ghost', disabled: busy || !!preview, title: '这条里写了好几件事？让 AI 拆开', onClick: () => { split(i.rawText || i.text, i.id); topRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }) } }, '✂️ AI 重新拆分'),
-            i.taskId ? h('span', { className: 'badge' }, '已转任务') : h('button', { className: 'btn', onClick: () => toTask(i) }, '→ 转任务'),
-            h('button', { className: 'btn ghost danger', onClick: () => { if (confirm('删除这条灵感？')) del(i.id) } }, '删除'))))
+          h('div', { className: 'row' },
+            i.taskId ? h('span', { className: 'badge' }, '已转任务') : h('button', { className: 'btn', onClick: () => toTask(i) }, '转任务'),
+            h('button', { className: 'btn ghost', disabled: busy || !!preview, title: '这条里写了好几件事？让 AI 拆开', onClick: () => { split(i.rawText || i.text, i.id); topRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }) } }, '再拆分'),
+            h('button', { className: 'btn ghost danger', onClick: () => { if (confirm('删除这条灵感？')) del(i.id) } }, '删除')),
+          ago(i.createdAt) && h('p', { className: 'muted' }, ago(i.createdAt))))
           : h('p', { className: 'muted' }, ideas.length ? '没有匹配的灵感' : '灵感库还是空的。')))
     }
 
@@ -808,7 +848,7 @@ window.__ModuleLoader__.load({
           h('span', { className: 'muted grow', title: src.path }, src.ok ? `${src.workspaces.length} 个工作区` : '读取失败'),
           h('span', { className: 'muted' }, src.path)),
         closed[src.id] ? null : !src.ok ? h('p', { className: 'muted' }, src.error) : !src.workspaces.length ? h('p', { className: 'muted' }, '暂无会话') : h('div', { className: 'wsgrid' }, src.workspaces.map((w) => h('div', { key: w.id, className: 'ws' },
-          h('div', { className: 'row' }, h('b', { className: 'grow', title: w.path }, `📁 ${w.title}`), h('span', { className: 'muted' }, `共 ${w.total} 个会话，显示最近 2 个`)),
+          h('div', { className: 'row' }, h('b', { className: 'grow', title: w.path }, `${w.title}`), h('span', { className: 'muted' }, `共 ${w.total} 个会话，显示最近 2 个`)),
           w.sessions.length ? w.sessions.map((s) => h('div', { key: s.id, className: 'sess' },
             h(Ring, { pct: s.contextPct }),
             h('div', { className: 'grow', style: { minWidth: 0 } },
@@ -818,7 +858,7 @@ window.__ModuleLoader__.load({
               h('div', { className: 'muted' }, s.contextWindow ? `上下文 ${Math.round((s.contextUsed ?? 0) / 1000)}k / ${Math.round(s.contextWindow / 1000)}k tokens${s.contextPct >= 80 ? ' · ⚠️ 快满了，考虑压缩或新开会话' : ''}` : '暂无上下文数据')))) : h('p', { className: 'muted' }, '暂无会话')))))
       return h(Fragment, null,
         h('div', { className: 'row', style: { marginBottom: 10 } }, h('span', { className: 'muted grow' }, `每 30 秒刷新 · 上次 ${new Date(data.at).toLocaleTimeString()} · 每个工作区显示最近 2 个会话`),
-          h('button', { className: 'btn', onClick: () => goSettings?.() }, '⚙️ 配置 Agent'), h('button', { className: 'btn', onClick: load }, '↻ 刷新')),
+          h('button', { className: 'btn', onClick: () => goSettings?.() }, '配置 Agent'), h('button', { className: 'btn', onClick: load }, '↻ 刷新')),
         data.sources.length ? data.sources.map(section) : h('p', { className: 'muted' }, '还没有启用任何 Agent，去「设置」里添加。'))
     }
 
@@ -854,7 +894,7 @@ window.__ModuleLoader__.load({
               h('button', { className: 'btn ghost', 'aria-label': '下移', onClick: () => move(i, 1) }, '↓'),
               h('button', { className: 'btn ghost danger', 'aria-label': '删除', onClick: () => del(i) }, '×')))),
           h('div', { className: 'row', style: { marginTop: 10 } },
-            h('button', { className: 'btn', onClick: add }, '＋ 添加 Agent'),
+            h('button', { className: 'btn', onClick: add }, '添加 Agent'),
             h('span', { className: 'grow' }),
             h('button', { className: 'btn ghost', onClick: reset }, '恢复默认'),
             dirty && h('button', { className: 'btn ghost', onClick: () => load(true) }, '放弃修改'),
@@ -877,14 +917,14 @@ window.__ModuleLoader__.load({
       return h(Fragment, null,
         h('div', { className: 'row' }, h('p', { className: 'muted grow' }, '说说你现在想做的事或遇到的问题。教练会帮你把它说具体：对象、第一步动作、交付物、完成标准、时间。'),
           msgs.length > 0 && h('button', { className: 'btn ghost', onClick: () => { if (confirm('清空这段教练对话？')) setMsgs([]) } }, '清空对话')),
-        h('div', { style: { minHeight: 120 } }, msgs.length === 0 && h('div', { className: 'msg coach' }, '👋 试试说一句：「SEO 那块感觉有点乱，想优化一下」'),
+        h('div', { style: { minHeight: 120 } }, msgs.length === 0 && h('div', { className: 'msg coach' }, '试试说一句：「SEO 那块感觉有点乱，想优化一下」'),
           msgs.map((m, i) => m.me ? h('div', { key: i, className: 'msg me' }, m.me) : h('div', { key: i, className: 'msg coach' },
             h('div', null, '表达清晰度：', h('span', { className: cx('clar', m.coach.clarity) }, label[m.coach.clarity]), m.coach.missing.length > 0 && h('span', { className: 'muted' }, ` · 缺：${m.coach.missing.join('、')}`)),
-            m.coach.rewrite && h('p', { style: { marginTop: 6 } }, '🎯 具体说法：', h('b', null, m.coach.rewrite)),
+            m.coach.rewrite && h('p', { style: { marginTop: 6 } }, '具体说法：', h('b', null, m.coach.rewrite)),
             m.coach.questions.length > 0 && h('ul', { style: { margin: '6px 0 0', paddingLeft: 18 } }, m.coach.questions.map((q, k) => h('li', { key: k }, q))),
-            m.coach.paper && h('div', { className: 'paper' }, '✍️ ', h('b', null, '先停一下，拿出纸笔。'), ' ', m.coach.paperPrompt || '花 3 分钟在纸上写下：现在是什么样 → 卡在哪 → 想要的结果。想清楚了再回来告诉我。'),
-            h('div', { className: 'row', style: { marginTop: 8 } }, m.coach.encourage && h('span', { className: 'muted grow' }, `💬 ${m.coach.encourage}`),
-              m.coach.task && m.coach.clarity !== 'low' && h('button', { className: 'btn', onClick: () => addTask(m.coach.task) }, `＋ 加为任务（${m.coach.task.estimateMin} 分钟）`),
+            m.coach.paper && h('div', { className: 'paper' }, h('b', null, '先停一下，拿出纸笔。'), ' ', m.coach.paperPrompt || '花 3 分钟在纸上写下：现在是什么样 → 卡在哪 → 想要的结果。想清楚了再回来告诉我。'),
+            h('div', { className: 'row', style: { marginTop: 8 } }, m.coach.encourage && h('span', { className: 'muted grow' }, `${m.coach.encourage}`),
+              m.coach.task && m.coach.clarity !== 'low' && h('button', { className: 'btn', onClick: () => addTask(m.coach.task) }, `加为任务（${m.coach.task.estimateMin} 分钟）`),
               m.coach.source === 'rule' && h('span', { className: 'badge' }, '规则模式'))))),
         busy && h('p', { className: 'muted' }, '教练在想…'),
         h('form', { className: 'row', style: { marginTop: 8 }, onSubmit: send },
@@ -950,17 +990,17 @@ window.__ModuleLoader__.load({
             h('input', { className: 'in grow', placeholder: '汇报标题（可空）', value: title, onChange: (e) => setTitle(e.target.value) }),
             h('input', { className: 'in', placeholder: '汇报对象，例如：老板', value: audience, onChange: (e) => setAudience(e.target.value) }),
             h('select', { className: 'in', value: days, onChange: (e) => setDays(Number(e.target.value)) }, [[1, '今天'], [7, '近 7 天'], [14, '近 2 周'], [30, '近 30 天']].map(([v, l]) => h('option', { key: v, value: v }, l))),
-            h('button', { className: 'btn pri', disabled: busy, onClick: gen }, busy ? '生成中…' : '📤 生成任务汇报')),
+            h('button', { className: 'btn pri', disabled: busy, onClick: gen }, busy ? '生成中…' : '生成任务汇报')),
           h('p', { className: 'muted', style: { marginTop: 6 } }, sel.size ? `已选 ${sel.size} 个任务` : '不勾选时，自动汇报所选时间范围内完成或进行中的任务。汇报要点越多，生成的内容越扎实。')),
         h('div', { className: 'small', style: { marginTop: 10 } }, tasks.map((t) => h('label', { key: t.id, className: 'it' },
           h('input', { type: 'checkbox', checked: sel.has(t.id), onChange: () => toggle(t.id) }),
           h('span', { className: 'grow' }, t.title), h(Badge, { track: t.track }),
-          h('span', { className: 'muted' }, `${t.status === 'done' ? '✅' : '⏳'} 要点 ${(t.notes ?? []).length} 条`)))),
+          h('span', { className: 'muted' }, `要点 ${(t.notes ?? []).length} 条${t.status === 'done' ? '，已完成' : ''}`)))),
         out && h('div', { className: 'card', style: { marginTop: 12 } },
           h('div', { className: 'row' }, h('b', { className: 'grow' }, out.deck.title),
-            h('button', { className: 'btn pri', onClick: openHtml }, '▶ 播放 HTML 幻灯片'),
-            h('button', { className: 'btn', onClick: () => download('report.md', out.markdown, 'text/markdown') }, '⬇ Markdown'),
-            h('button', { className: 'btn', onClick: () => download('report.html', out.html, 'text/html') }, '⬇ HTML'),
+            h('button', { className: 'btn pri', onClick: openHtml }, '播放 HTML 幻灯片'),
+            h('button', { className: 'btn', onClick: () => download('report.md', out.markdown, 'text/markdown') }, '下载 Markdown'),
+            h('button', { className: 'btn', onClick: () => download('report.html', out.html, 'text/html') }, '下载 HTML'),
             h('button', { className: 'btn', onClick: () => navigator.clipboard.writeText(out.markdown).then(() => notify('已复制 Markdown')) }, '复制')),
           h('p', { className: 'muted', style: { margin: '6px 0' } }, `已保存：${out.mdPath}`),
           h('pre', { className: 'md' }, out.markdown)))
@@ -997,10 +1037,10 @@ window.__ModuleLoader__.load({
             h('button', { className: cx('ck', done && 'on'), style: { marginTop: 6 }, 'aria-label': done ? '撤销完成' : '标记完成', onClick: () => p({ status: done ? 'todo' : 'done' }, done ? '已撤销完成' : '完成！') }, done ? '✓' : ''),
             h('textarea', { className: 'ttl', rows: 1, value: title, 'aria-label': '标题', onChange: (e) => setTitle(e.target.value.replace(/\n/g, '')),
               onBlur: () => { const v = title.trim(); if (v && v !== t.title) p({ title: v }, '标题已更新'); else setTitle(t.title) } }),
-            h('button', { className: 'link plain', 'aria-label': '关闭', onClick: onClose, style: { fontSize: 18 } }, '×')),
+            h('button', { className: 'link plain', 'aria-label': '关闭', onClick: onClose, style: { fontSize: 16 } }, '×')),
           h('div', { className: 'form' },
             h('span', { className: 'muted' }, '类别'),
-            h('span', { className: 'seg' }, Object.entries(TRACK).map(([k, [l, ic]]) => h('button', { key: k, className: cx(t.track === k && 'on'), onClick: () => p({ track: k }) }, `${ic} ${l}`))),
+            h('span', { className: 'seg' }, Object.entries(TRACK).map(([k, [l]]) => h('button', { key: k, className: cx(t.track === k && 'on'), onClick: () => p({ track: k }) }, l))),
             h('span', { className: 'muted' }, '计划日期'),
             h('span', { className: 'row' }, h('input', { className: 'in', type: 'date', value: t.planDate ?? '', onChange: (e) => p({ planDate: e.target.value || null }) }),
               h('button', { className: 'link', onClick: () => p({ planDate: dkey() }) }, '今天'), h('button', { className: 'link', onClick: () => p({ planDate: addK(dkey(), 1) }) }, '明天'),
@@ -1060,7 +1100,7 @@ window.__ModuleLoader__.load({
               h('span', { className: 'wd' }, `周${WK[i]}`),
               h('span', { className: 'dn' }, kdate(d.date).getDate()),
               h('span', { className: 'grow' }),
-              !past && h('button', { className: 'add', title: `在 ${mdLabel(d.date)} 加任务`, 'aria-label': `在 ${mdLabel(d.date)} 加任务`, onClick: () => addOn(d.date) }, '＋')),
+              !past && h('button', { className: 'add', title: `在 ${mdLabel(d.date)} 加任务`, 'aria-label': `在 ${mdLabel(d.date)} 加任务`, onClick: () => addOn(d.date) }, '+')),
             h('div', { className: 'items' },
               items.map((x) => h(CalTask, { key: (x.task ?? x).id, x, onOpen: setOpenId, today })),
               !items.length && h('div', { className: 'none' }, past ? '' : '空')),
@@ -1071,7 +1111,7 @@ window.__ModuleLoader__.load({
           h('h4', { style: { marginTop: 0 } }, `未安排 ${data.unscheduled.length}`),
           data.unscheduled.length ? data.unscheduled.map((t) => h(CalTask, { key: t.id, x: { task: t }, onOpen: setOpenId, today }))
             : h('div', { className: 'none' }, '没有未安排的任务'),
-          h('p', { className: 'muted', style: { fontSize: 11.5, marginTop: 8 } }, '拖到某一天就安排在那天；拖回这里取消安排。')))
+          h('p', { className: 'muted', style: { fontSize: 10, marginTop: 8 } }, '拖到某一天就安排在那天；拖回这里取消安排。')))
 
       const month = () => {
         const m = anchor.slice(0, 7)
@@ -1121,7 +1161,7 @@ window.__ModuleLoader__.load({
         h('div', { className: 'topbar' },
           h('nav', { className: 'tabs', role: 'tablist' }, tabs.map(([id, label]) => h('button', { key: id, role: 'tab', 'aria-selected': tab === id, className: cx('tab', tab === id && 'on'), onClick: () => setTab(id) }, label))),
           h('span', { className: 'grow' }),
-          plan?.active && tab !== 'today' && tab !== 'cal' && h('button', { className: 'pill live', style: { border: 0, cursor: 'pointer' }, onClick: () => setTab('today') }, '● 专注中'),
+          plan?.active && tab !== 'today' && tab !== 'cal' && h('button', { className: 'pill live', style: { border: 0, cursor: 'pointer' }, onClick: () => setTab('today') }, '专注中'),
           status && h('span', { className: 'pill', title: status.ai.available ? `${status.ai.provider}/${status.ai.model}` : '模型不可用，使用规则兜底' }, status.ai.available ? 'AI 就绪' : '规则模式')),
         tab === 'today' ? h(Today, shared) : tab === 'cal' ? h(CalendarView, shared) : h('div', { className: 'tabpage', style: { marginTop: 12 } }, h(View, shared)))
     }

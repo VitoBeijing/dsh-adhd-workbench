@@ -1,4 +1,6 @@
-// 前端外观约定：名字显示、玻璃材质只用在浮层上（不模糊内容区）、并且有降级退路。
+// 前端外观契约（Hallmark · Hum 主题重设计后）：
+// 名字显示；Hum token 体系（Chillax 全篇、pear-yellow 主信号、纸板按压控件、撕边纸张）；
+// 浮层用纸张质感（不模糊）；无 emoji 图标（Floor 30a）。
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
@@ -53,71 +55,91 @@ test('界面上不再出现「ADHD 工作台」字样', () => {
   assert.ok(!/工作台/.test(css))
 })
 
-test('Apple 规范：单一强调蓝、字阶、圆角、动效', () => {
+test('Hum 规范：Chillax 全篇、pear-yellow 主信号、纸板按压控件', () => {
   const css = src.slice(src.indexOf('const css = `'), src.indexOf('@media (prefers-reduced-motion'))
-  // 单一强调色：Action Blue（浅色）/ Sky Link Blue（深色），跟随宿主 color-scheme
-  // 填充用 Action Blue（两种主题一致，白字才够对比度）；文字链接在深色才换 Sky Link Blue
-  assert.match(css, /--acc:#0066cc;/, '按钮等填充色必须是 Action Blue #0066cc')
-  assert.match(css, /--acc-link:light-dark\(#0066cc,#2997ff\)/, '文字链接在深色用 Sky Link Blue')
-  assert.match(css, /--acc-focus:light-dark\(#0071e3,#4da3ff\)/, '键盘焦点蓝')
-  // 不能出现第三个蓝色，也不能用深色的亮蓝去填按钮（白字对比度不够）
-  const blues = new Set([...css.matchAll(/#(0066cc|2997ff|0071e3|4da3ff|0a84ff|5e5ce6)/gi)].map((m) => m[1].toLowerCase()))
-  assert.deepEqual([...blues].sort(), ['0066cc', '0071e3', '2997ff', '4da3ff'], '蓝色只能来自 Apple 这四个 token')
-  assert.doesNotMatch(css, /\.btn\.pri\{[^}]*var\(--acc-link\)/, '主按钮不能用深色亮蓝填充')
-  // 字重阶梯 300/400/600/700，500 不出现
-  assert.doesNotMatch(css, /font-weight:\s*500/, 'Apple 字重阶梯里没有 500')
-  // 正文 17px、致密 1.47、负字距
-  assert.match(css, /\.awb\{[^}]*font-size:17px/, '正文用 17px，不是 16px')
-  assert.match(css, /\.awb\{[^}]*line-height:1\.47/, '正文行高 1.47')
-  assert.match(css, /\.awb\{[^}]*letter-spacing:-\.374px/, '正文负字距')
-  // 标题用 600 而非 700
-  assert.doesNotMatch(css, /h1\{[^}]*font-weight:700/, '标题用 600，不用 700')
-  // 圆角只用五档 token
-  const radii = [...css.matchAll(/border-radius:([^;}]+)/g)].map((m) => m[1].trim())
-  const allowed = /^(var\(--r-(xs|sm|md|lg|pill)\)( var\(--r-xs\)){0,2}( 0){0,2}|inherit)$/
-  for (const r of radii) assert.match(r, allowed, `圆角 ${r} 不在 Apple 尺度里`)
-  // 按下统一 scale(.95)
-  assert.match(css, /\.awb \.btn:active:not\(:disabled\)\{transform:scale\(\.95\)\}/, '按下应为 scale(.95)')
-  // 按钮/卡片不加阴影（只有弹窗可以有一处柔和投影）
-  const shadowRules = [...css.matchAll(/\.awb \.(btn|chip|tab|group|kpi|ws|ct)[^{]*\{[^}]*box-shadow/g)]
-  assert.deepEqual(shadowRules.map((m) => m[1]), [], '按钮和卡片不允许加阴影')
-  // 不用装饰性渐变（玻璃高光渐变也去掉）
-  assert.ok(!css.includes('--glass-sheen'), '不允许装饰性渐变高光')
+  // 主信号色是梨黄（hue ~95 的 oklch）
+  assert.match(css, /--color-accent:oklch\(87% \.175 96\)/, '主信号色必须是 Hum pear-yellow')
+  assert.match(css, /--color-accent-deep:/, '主按钮要有压下的深一档')
+  assert.match(css, /--color-accent-ink:/, '黄底上的文字色 token 必须存在（Gate 41）')
+  // 三 accents 不混：blue 链接、coral 警示、mint 成长
+  assert.match(css, /--color-blue:oklch\(50% \.17 250\)/, '链接用 blue accent')
+  assert.match(css, /--color-coral:/, '珊瑚色做 loud moment')
+  assert.match(css, /--color-mint:/, '薄荷绿做成长')
+  // Chillax 全篇（display = body）
+  assert.match(css, /--font-display:"Chillax"/, '标题正文都用 Chillax')
+  assert.match(css, /--font-body:var\(--font-display\)/, 'body 复用 display 字族')
+  assert.match(css, /@import url\("https:\/\/api\.fontshare\.com\/v2\/css\?f\[\]=chillax/, '要引入 Chillax')
+  // 标题只用 600（display-weight），正文 500/600
+  assert.doesNotMatch(css, /h1\{[^}]*font-weight:(?!600)/, '标题用 600')
+  // 圆角四档：8 / 14 / 16 / 24 / pill
+  assert.match(css, /--r-xs:8px;--r-sm:14px;--r-lg:16px;--r-xl:24px;--r-pill:999px/, '圆角是 Hum 的 8/14/16/24/pill')
+  // 纸板按压控件：按下下沉 3px，hover 上抬 2px
+  assert.match(css, /\.awb \.btn:active:not\(:disabled\)\{[^}]*translate:0 3px/, '按钮按下应为下沉 3px')
+  assert.match(css, /\.awb \.btn:hover:not\(:disabled\)\{[^}]*translate:0 -2px/, '按钮 hover 应上抬')
+  // spring 只给主按钮（waive 12）
+  assert.match(css, /Hallmark · waive 12/, 'spring 动效要有 waiver 记录')
+  // 色块纯色纸面（不用纹理，避免黑影颗粒）
+  assert.doesNotMatch(css, /--grain:|--fibre:/, '不再用纹理 data URI')
+  // 不再用旧 Apple 蓝
+  assert.ok(!/--acc:#0066cc/.test(css), '不能再保留 Action Blue')
 })
 
-test('Liquid Glass：浮层有背景模糊，内容区不模糊，并有降级退路', () => {
+test('Hallmark Floor：无 emoji 图标、无 token 外颜色、无 width 过渡', () => {
+  // Floor 30a：TRACK/IDEA_CAT 的图标位和按钮上的 emoji 都要去掉
+  assert.ok(!/'💼'|'🌱'|'🏠'|'🧠'|'🌿'/.test(src), 'TRACK/IDEA_CAT 不能再带 emoji 图标')
+  // （排除 CSS stamp 的 dropped 记录行——它如实记录了被移除的图标）
+  const uiSrc = src.split('\n').filter((l) => !l.includes('Hallmark · dropped')).join('\n')
+  for (const e of ['▶  开始专注', '✂️', '📤 生成', '⬇ ', '👋 ', '🎯 ', '✍️ ', '📁 ', '⚙️ 配置']) {
+    assert.ok(!uiSrc.includes(e), `还残留 emoji：${e}`)
+  }
+  const css = src.slice(src.indexOf('const css = `'), src.indexOf('@media (prefers-reduced-motion'))
+  // Floor 48：颜色/字体字面量只允许出现在 :root token 块和 @import
+  const tokenEnd = css.indexOf('}', css.indexOf(':root{'))
+  const body = css.slice(tokenEnd)
+  assert.doesNotMatch(body, /#[0-9a-fA-F]{3,8}\b/, 'token 块外不能有 hex 颜色字面量')
+  assert.doesNotMatch(body, /font-family:(?!var\()/, 'token 块外 font-family 必须走 var()')
+  // Floor 10a：进度条不直接过渡 width，用 transform
+  assert.match(css, /\.awb \.prog>i\{[^}]*transition:transform/, '进度条用 transform 过渡')
+  assert.doesNotMatch(css, /transition:[^;}]*\bwidth\b/, '不允许 width 过渡')
+  // Floor 39a：disabled 不能只靠 opacity（还要 not-allowed 光标）
+  assert.match(css, /\.awb \.btn:disabled\{opacity:\.45;cursor:not-allowed/, 'disabled 要 opacity + not-allowed')
+  // Floor 26a：focus-visible 必须存在且瞬时
+  assert.match(css, /:focus-visible\{outline:2px solid var\(--color-focus\)/, 'focus 环必须存在')
+})
+
+test('Hum 纸张：浮层用纯色纸面而非玻璃模糊', () => {
   const css = src.slice(src.indexOf('const css = `'), src.indexOf('@media (prefers-reduced-motion'))
   const rule = (sel) => {
     const i = css.indexOf(sel + '{')
     return i < 0 ? '' : css.slice(i, css.indexOf('}', i) + 1)
   }
-  // 浮在上面的层：顶部栏、底部输入栏、提示气泡、任务弹窗，必须有 backdrop-filter
-  for (const sel of ['.awb .topbar', '.awb .dock .inner', '.awb .mcard2', '.awb .toast>span']) {
-    assert.match(rule(sel), /backdrop-filter:(saturate|var\(--blur\))/, `${sel} 缺少背景模糊`)
+  // Hum 不用玻璃模糊：浮层用纸张纹理 + 阴影
+  assert.doesNotMatch(rule('.awb .modal'), /backdrop-filter/, 'modal 不用玻璃模糊')
+  // 顶部栏、底部输入栏、提示气泡、卡片：纯色纸面
+  for (const sel of ['.awb .topbar', '.awb .dock .inner', '.awb .toast>span', '.awb .card']) {
+    assert.doesNotMatch(rule(sel), /--grain|--fibre|backdrop-filter/, `${sel} 应是纯色纸面`)
   }
-  // 内容区（分组长列表）不能模糊，否则文字会糊
-  assert.doesNotMatch(rule('.awb .group'), /backdrop-filter/, '分组列表不该模糊')
-  // 不支持背景模糊时要有不透明的退路
-  assert.match(css, /@supports not \(\(backdrop-filter/, '缺少 backdrop-filter 降级')
-  // 玻璃材质按规范：Parchment 80% 半透明，能透出背后内容
-  assert.match(rule('.awb .dock .inner'), /--frosted/, '底部栏应使用玻璃材质变量')
-  assert.match(css, /--frosted:color-mix\(in srgb,var\(--parchment\) 80%,transparent\)/, '浮层应为 Parchment 80% 半透明')
+  // modal 有纸张阴影
+  assert.match(rule('.awb .mcard2'), /filter:var\(--shadow-paper\)/, '弹窗应有纸张投影')
 })
 
-test('macOS 交互：按下缩放、选中项浮起、尊重减少动效偏好', () => {
+test('Hum 交互：按压下沉、选中页签为 accent-soft、尊重减少动效偏好', () => {
   const css = src.slice(src.indexOf('const css = `'), src.indexOf('@media (prefers-reduced-motion'))
-  assert.match(css, /\.awb \.btn:active:not\(:disabled\)\{transform:scale\(\.95\)\}/, '按钮按下应为 scale(.95)')
-  assert.match(css, /\.awb \.tab\.on\{[^}]*background:var\(--canvas\)/, '选中的标签页应换成实心底面')
+  assert.match(css, /\.awb \.btn:active:not\(:disabled\)\{[^}]*translate:0 3px/, '按钮按下应为下沉 3px')
+  assert.match(css, /\.awb \.tab\.on\{[^}]*background:var\(--color-accent-soft\)/, '选中的标签页用 accent-soft')
   assert.match(src, /@media \(prefers-reduced-motion:reduce\)/, '应尊重系统减少动效偏好')
-  assert.match(css, /\.awb \.day\.over,\.awb \.unsch\.over\{[^}]*var\(--acc\)/, '拖动目标应有蓝色高亮')
+  // 拖放目标用 Hum accent
+  assert.match(css, /\.awb \.day\.over,\.awb \.unsch\.over\{[^}]*var\(--color-accent\)/, '拖动目标应有高亮')
+  // 日历块用 accent-soft（不再是塑料分格）
+  assert.match(css, /\.awb .ct\{[^}]*--color-accent-soft/, '日历块用 accent-soft')
 })
 
-test('工作区项目卡片：没有外边框，靠底色分层（深色下不能和页面同色）', () => {
+test('工作区项目卡片：纯色纸面 + 圆角', () => {
   const css = src.slice(src.indexOf('const css = `'), src.indexOf('@media (prefers-reduced-motion'))
   const m = css.match(/\.awb \.ws\{([^}]*)\}/)
   assert.ok(m, '找不到 .ws 规则')
   assert.doesNotMatch(m[1], /(^|;)\s*border\s*:/, '项目卡片不应再有外边框')
-  assert.match(m[1], /background:var\(--pearl\)/, '去掉边框后要用 pearl 底色分层，否则深色下会和页面同色而消失')
+  assert.doesNotMatch(m[1], /--grain|--fibre/, '工作区卡片应纯色无纹理')
   assert.match(m[1], /border-radius:var\(--r-lg\)/, '圆角保留')
 })
 
@@ -127,5 +149,5 @@ test('上下文圆环：不用裸 ring 类名，且显式关掉 box-shadow', () 
   assert.match(src, /className: 'awb-ring'/, '圆环类名要带前缀，避开宿主 Tailwind 的 .ring')
   assert.doesNotMatch(src, /className: 'ring'/, '不能再用裸 ring 类名')
   assert.match(css, /\.awb \.awb-ring\{box-shadow:none/, '圆环要显式关掉阴影兜底')
-  assert.match(css, /\.awb \.awb-ring text\{font-weight:600\}/, '百分比文字样式要跟着改名')
+  assert.match(css, /\.awb \.awb-ring text\{font-weight:500\}/, '百分比文字样式要跟着改名')
 })
