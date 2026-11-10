@@ -750,6 +750,7 @@ window.__ModuleLoader__.load({
       useEffect(() => { load() }, [])
       const [preview, setPreview] = useKept('ideas.preview', null) // { items, source, rawText, replaceId }
       const [openRaw, setOpenRaw] = useKept('ideas.openRaw', {})
+      const [showDone, setShowDone] = useKept('ideas.showDone', false)
       const topRef = useRef(null)
       // 先让 AI 拆分成多条，出预览；用户确认后才入库
       const split = async (raw, replaceId) => {
@@ -782,7 +783,9 @@ window.__ModuleLoader__.load({
         try { await api('POST', '/tasks', { title: (i.nextAction || i.text).slice(0, 200), detail: i.text, track: i.category === 'work' ? 'work' : i.category === 'life' ? 'life' : 'growth', fromIdea: i.id }); notify('已转成任务'); load(); reload() } catch (e) { notify(e.message, true) }
       }
       if (!ideas) return h('p', { className: 'muted' }, '加载中…')
-      const inCat = ideas.filter((i) => cat === 'all' || i.category === cat)
+      const active = ideas.filter((i) => !i.done)
+      const doneList = ideas.filter((i) => i.done).sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
+      const inCat = active.filter((i) => cat === 'all' || i.category === cat)
       const subs = [...new Set(inCat.map((i) => i.subcategory))]
       const shown = inCat.filter((i) => (sub === 'all' || i.subcategory === sub) && (!q || `${i.text} ${i.subcategory} ${(i.tags ?? []).join(' ')}`.toLowerCase().includes(q.toLowerCase())))
         .sort((a, b) => (b.starred - a.starred) || (b.createdAt - a.createdAt))
@@ -811,7 +814,7 @@ window.__ModuleLoader__.load({
           h('textarea', { className: 'in', rows: 3, placeholder: '脑子里冒出什么就丢进来，一次写好几件也行，AI 会拆成多条并分别分类。专注时冒出的念头也放这里，回头再说。', value: text, onChange: (e) => setText(e.target.value), onKeyDown: (e) => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) add(e) } }),
           h('div', { className: 'row', style: { marginTop: 6 } }, h('span', { className: 'muted grow' }, '⌘/Ctrl + Enter 提交，先预览，确认后才入库'), h('button', { className: 'btn pri', disabled: busy || !text.trim() }, busy ? 'AI 拆分中…' : '💡 拆分并预览'))),
         h('div', { className: 'chips', style: { marginTop: 12 } },
-          [['all', '全部'], ...Object.entries(IDEA_CAT).map(([k, [l]]) => [k, l])].map(([k, l]) => h('button', { key: k, className: cx('chip', cat === k && 'on'), onClick: () => { setCat(k); setSub('all') } }, `${l} ${k === 'all' ? ideas.length : ideas.filter((i) => i.category === k).length}`))),
+          [['all', '全部'], ...Object.entries(IDEA_CAT).map(([k, [l]]) => [k, l])].map(([k, l]) => h('button', { key: k, className: cx('chip', cat === k && 'on'), onClick: () => { setCat(k); setSub('all') } }, `${l} ${k === 'all' ? active.length : active.filter((i) => i.category === k).length}`))),
         subs.length > 0 && h('div', { className: 'chips', style: { marginTop: 6 } },
           [['all', '全部小类'], ...subs.map((s) => [s, s])].map(([k, l]) => h('button', { key: k, className: cx('chip', sub === k && 'on'), onClick: () => setSub(k) }, k === 'all' ? l : `${l} ${inCat.filter((i) => i.subcategory === k).length}`)),
           h('input', { className: 'in', style: { marginLeft: 'auto' }, placeholder: '搜索…', value: q, onChange: (e) => setQ(e.target.value) })),
@@ -828,11 +831,19 @@ window.__ModuleLoader__.load({
             openRaw[i.id] && h('p', { className: 'muted', style: { whiteSpace: 'pre-wrap', margin: '4px 0 0 8px' } }, i.rawText || i.fullText,
               i.fullText && i.fullText !== i.rawText && h(Fragment, null, '\n\n— 整段原话 —\n', i.fullText))),
           h('div', { className: 'row' },
-            i.taskId ? h('span', { className: 'badge' }, '已转任务') : h('button', { className: 'btn', onClick: () => toTask(i) }, '转任务'),
+            i.taskId ? h('span', { className: 'badge' }, `已转任务${i.taskStatus === 'doing' ? ' · 进行中' : i.taskStatus === 'deleted' ? ' · 任务已删除' : ''}`) : h('button', { className: 'btn', onClick: () => toTask(i) }, '转任务'),
             h('button', { className: 'btn ghost', disabled: busy || !!preview, title: '这条里写了好几件事？让 AI 拆开', onClick: () => { split(i.rawText || i.text, i.id); topRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }) } }, '再拆分'),
             h('button', { className: 'btn ghost danger', onClick: () => { if (confirm('删除这条灵感？')) del(i.id) } }, '删除')),
           ago(i.createdAt) && h('p', { className: 'muted' }, ago(i.createdAt))))
-          : h('p', { className: 'muted' }, ideas.length ? '没有匹配的灵感' : '灵感库还是空的。')))
+          : h('p', { className: 'muted' }, active.length ? '没有匹配的灵感' : '灵感库还是空的。')),
+        doneList.length > 0 && h(Fragment, null,
+          h('h4', null, h('button', { className: 'disclose', 'aria-expanded': showDone, onClick: () => setShowDone(!showDone) }, `${showDone ? '▾' : '▸'} 已完成的灵感 ${doneList.length}`)),
+          showDone && h('div', { className: 'group' }, doneList.map((i) => h('div', { key: i.id, className: 'rowi' },
+            h('span', { className: 'ck on', 'aria-hidden': true }, '✓'),
+            h('div', { className: 'grow' },
+              h('div', { className: 't', style: { color: 'var(--ink-muted)', textDecoration: 'line-through' } }, i.text),
+              h('div', { className: 'm' }, `#${i.subcategory} · 完成于 ${i.completedAt ? ago(i.completedAt) : '—'}`)),
+            h('button', { className: 'link plain', onClick: () => { if (confirm('删除这条灵感？')) del(i.id) } }, '删除'))))))
     }
 
     // ———————————————— 工作区看板 ————————————————
