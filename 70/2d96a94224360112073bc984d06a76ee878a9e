@@ -1,0 +1,25 @@
+client/index.js
+  s_ad4c8a4643dfaa::t_c592f3adfa6f71 753,786-788,817,834,838-846
+README.md
+  s_ad4c8a4643dfaa::t_e0b8046f69a7e2 11
+lib/api.js
+  s_ad4c8a4643dfaa::t_d7ff951830e4c7 214-224
+test/ideas-done.test.js
+  s_ad4c8a4643dfaa::t_b0ac00bb7c0c2c 1-67
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.52-trip",
+  "base_commit_sha": "702d96a94224360112073bc984d06a76ee878a9e",
+  "prompts": {},
+  "sessions": {
+    "s_ad4c8a4643dfaa": {
+      "agent_id": {
+        "tool": "deepseekharness",
+        "id": "session-df26e8c7-5718-4e87-81df-67640ccc8a54",
+        "model": "kimi-k3"
+      },
+      "human_author": "VitoBeijing <43870892+VitoBeijing@users.noreply.github.com>"
+    }
+  }
+}
